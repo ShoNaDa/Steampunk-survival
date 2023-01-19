@@ -1,4 +1,0 @@
-tile_set: "/hero/hero.atlas"
-default_animation: "hero robot"
-material: "/builtins/materials/sprite.material"
-blend_mode: BLEND_MODE_ALPHA
