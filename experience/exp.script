@@ -1,0 +1,25 @@
+go.property("point", 0)
+
+local CONTACT_POINT_RESPONSE = hash("contact_point_response")
+local GET_URL = hash("get_url")
+local HERO = hash("hero")
+
+local pos_exp = vmath.vector3()
+
+local function create_exp(self)
+	local id_exp = factory.create("#exp_factory", pos_exp, nil, { point = self.point })
+end
+
+function on_message(self, message_id, message, sender)
+	if message_id == GET_URL then
+		pos_exp = go.get_position(sender)
+		self.point = message.point_exp
+		
+		create_exp(self)
+	end
+	if message_id == CONTACT_POINT_RESPONSE and message.other_group == HERO then
+		msg.post("/hero/hero", "lvl_update", { point = self.point })
+
+		go.delete()
+	end
+end

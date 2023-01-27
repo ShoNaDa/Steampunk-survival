@@ -1,0 +1,38 @@
+local LVL_UPDATE = hash("lvl_update")
+local LVL_UP = hash("lvl_up")
+
+local url_of_script = nil
+local progress = {}
+local lvl_progress = 1
+local max_lvl_progress = 100
+local lvl = 1
+local ratio = {}
+
+--lvl_progress to max_lvl_progress
+local function sizeProgress(gui)
+	ratio = lvl_progress / max_lvl_progress
+	progress.size.x = ratio * progress.maxWidth
+	gui.set_size(progress.node, progress.size)
+end
+
+function init(self)
+	msg.post(".", "acquire_input_focus")
+	progress = {size = vmath.vector3(0, 60, 0), maxWidth = 500, node = gui.get_node("progress")}
+	
+	sizeProgress(gui)
+end
+
+function on_message(self, message_id, message, sender)
+	if message_id == LVL_UPDATE then
+		lvl_progress = message.level_progress
+		sizeProgress(gui)
+	end
+	if message_id == LVL_UP then
+		lvl = message.lvl
+
+		self.lvl_label = gui.get_node("lvl")
+		gui.set_text(self.lvl_label, "lvl " .. message.lvl)
+		
+		sizeProgress(gui)
+	end
+end

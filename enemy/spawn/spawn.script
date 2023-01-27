@@ -1,0 +1,49 @@
+local RESPONSE = hash("response")
+
+local FIRST_POS_FACTORY = vmath.vector3(175,1000,0)
+local SECOND_POS_FACTORY = vmath.vector3(875,1000,0)
+local THIRD_POS_FACTORY = vmath.vector3(175,100,0)
+local FOURTH_POS_FACTORY = vmath.vector3(875,100,0)
+
+local function sender_msg()
+	msg.post("spawner#spawn", "response")
+end
+
+function init(self)
+	self.new_pos = vmath.vector3(0,0,0)
+	local pos_factory = go.get_position()
+
+	--post msg to hero
+	local id_factory = factory.create("#enemy1_factory", pos_factory, nil, { damage = go.get("/enemy1#enemy1", "damage") })
+	
+	--wait 1s then call send_first()
+	timer.delay(1, false, sender_msg)
+end
+
+local function rand_factory(self, id_factory)
+	if (id_factory == 1) then
+		self.new_pos = FIRST_POS_FACTORY
+	elseif (id_factory == 2) then
+		self.new_pos = SECOND_POS_FACTORY
+	elseif (id_factory == 3) then
+		self.new_pos = THIRD_POS_FACTORY
+	elseif (id_factory == 4) then
+		self.new_pos = FOURTH_POS_FACTORY
+	end
+end
+
+function on_message(self, message_id, message, sender)
+	if message_id == RESPONSE then
+		--get new pos by random
+		self.rand_factory = math.random(1, 4)
+		rand_factory(self, self.rand_factory)
+
+		--set new pos
+		go.set_position(self.new_pos)
+		local pos_factory = go.get_position()
+		factory.create("#enemy1_factory", pos_factory)
+
+		--wait 2s then call send_second()
+		timer.delay(2, false, sender_msg)
+	end
+end

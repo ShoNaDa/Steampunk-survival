@@ -1,0 +1,45 @@
+local LIFE_UPDATE = hash("life_update")
+
+local url_of_script = nil
+local progress = {}
+local life = 100
+local max_life = 100
+local ratio = {}
+local color = {red = vmath.vector4(0.9, 0, 0, 1), orange = vmath.vector4(1, 0.5, 0, 1), green = vmath.vector4(0, 0.8, 0, 1)}
+
+local function changeColor(gui)
+	if life < 30 then
+		gui.set_color(progress.node, color.red)
+	elseif life >= 30 and life <= 70 then
+		gui.set_color(progress.node, color.orange)
+	elseif life > 70 then
+		gui.set_color(progress.node, color.green)
+	end
+end
+
+--life to max life
+local function sizeProgress(gui)
+	ratio = life / max_life
+	progress.size.x = ratio * progress.maxWidth
+	gui.set_size(progress.node, progress.size)
+	changeColor(gui)
+end
+
+function init(self)
+	progress = {size = vmath.vector3(0, 60, 0), maxWidth = 500, node = gui.get_node("progress")}
+	sizeProgress(gui)
+
+	url_of_script = msg.url()
+	msg.post("/hero/hero#hero_script", "get_url", { url = url_of_script })
+end
+
+function on_message(self, message_id, message, sender)
+	if message_id == LIFE_UPDATE then
+		life = message.life
+		sizeProgress(gui)
+
+		--edit number of HP
+		local hp = gui.get_node("HP")
+		gui.set_text(hp, (life .. "/" .. max_life))
+	end
+end
