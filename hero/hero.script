@@ -1,0 +1,122 @@
+go.property("HP", 100)
+go.property("lvl", 1)
+go.property("speed", 0)
+go.property("fire_speed", 1)
+
+local max_HP = 100
+local max_speed = 100
+local lvl_progress = 1
+local max_lvl_progress = 100
+
+local LVL_UPDATE = hash("lvl_update")
+local SHOOT = hash("shoot")
+local GET_DAMAGE = hash("get_damage")
+local CONTACT_POINT_RESPONSE = hash("contact_point_response")
+local TOUCH = hash("touch")
+local ENEMY = hash("enemy")
+
+local function send_shoot()
+	msg.post(".", "shoot")
+end
+
+function init(self)
+	msg.post(".", "acquire_input_focus")
+	msg.post("camera", "acquire_camera_focus")
+	
+	timer.delay(self.fire_speed, false, send_shoot)
+	
+	self.move = 0
+end
+
+local function take_damage(self, damage)
+	if (self.HP - damage) > 0 then
+		self.HP = self.HP - damage
+		
+		--send new life to GUI
+		msg.post("default:/hero/camera#helth", "life_update", { life = self.HP })
+	end
+end
+
+function update(self, dt)
+	local rotation = go.get_rotation()
+	
+	-- need for pause
+	if (dt ~= 0) then 
+		--rotate with camera
+		if self.touch then 
+			local to = go.get_position() - go.get_position("camera")
+			local from = vmath.vector3(self.touch.x, self.touch.y, 0)
+			local angle = math.atan2(to.x - from.x, from.y - to.y)
+			rotation = vmath.quat_rotation_z(angle)
+			go.set_rotation(rotation)
+			self.touch = nil
+		end
+	end
+	
+	--move in direction of rotation
+	local pos = go.get_position()
+	if self.move ~= 0 then
+		local distance = self.speed * self.move * dt
+		local direction = vmath.rotate(rotation, vmath.vector3(0, distance, 0))
+		pos = pos + direction
+		go.set_position(pos)
+	end
+
+	--magic with camera
+	go.set_position(pos + vmath.vector3(-550, -350, 0), "camera")
+end 
+
+function on_input(self, action_id, action)
+	--move to click mouse
+	if action_id == TOUCH then
+		self.move = action.released and 0 or 1
+		
+		self.speed = max_speed
+	end
+	if not action_id then
+		self.touch = action
+	end
+end
+
+function on_message(self, message_id, message, sender)
+	if message_id == CONTACT_POINT_RESPONSE then
+		--pushback
+		if message.other_group == ENEMY then
+			local push_to = go.get_position() + message.normal * 30
+			-- knockback animation, then continue moving
+			go.animate(".", "position", go.PLAYBACK_ONCE_FORWARD, push_to, go.EASING_OUTQUAD, 0.3, 0)
+		end
+
+		--contact wall
+		local new_pos = go.get_position() + message.normal * message.distance
+		go.set_position(new_pos)
+	end
+	if message_id == GET_DAMAGE then
+		--get damage
+		take_damage(self, message.damage)
+	end
+	if message_id == SHOOT then
+		--send rotat and pos bullet
+		local rotation = go.get_rotation()
+		local position = go.get_position() + vmath.rotate(rotation, vmath.vector3(5, -10, 0))
+		local to = position + vmath.rotate(rotation, vmath.vector3(0, 1000, 0))
+		
+		local props = { rot = rotation, pos = position, to_b = to }
+		
+		msg.post("/hero/bullet_go#bullet", "shoot", props)
+		timer.delay(self.fire_speed, false, send_shoot)
+	end
+	if message_id == LVL_UPDATE then
+		lvl_progress = lvl_progress + message.point
+
+		--lvl up!
+		if max_lvl_progress <= lvl_progress then
+			lvl_progress = lvl_progress - max_lvl_progress
+			self.lvl = self.lvl + 1	
+
+			msg.post("default:/hero/camera#lvl", "lvl_up", { lvl = self.lvl })
+		end
+		
+		msg.post("default:/hero/camera#lvl", "lvl_update", { level_progress = lvl_progress })
+	end
+end
