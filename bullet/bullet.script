@@ -1,0 +1,34 @@
+go.property("damage", 10)
+
+--characteristics bullet
+local distance = 500
+local duration = distance / 250
+
+local SHOOT = hash("shoot")
+local GET_NEW_DAMAGE = hash("get_new_damage")
+
+function init(self)
+	msg.post("/hero/hero", "get_new_damage", { damage = self.damage })
+end
+
+local function fire(self, rotation, position, to)
+	--create bullet
+	local bullet_factory = "#bullet_factory"
+	local id_bullet = factory.create(bullet_factory, position, rotation, { damage = self.damage })
+
+	--animate bullet
+	go.animate(id_bullet, "position", go.PLAYBACK_ONCE_FORWARD, to, go.EASING_LINEAR, duration, 0, function()
+		go.delete(id_bullet) end)
+		
+	--send url
+	msg.post("/enemy1#enemy1", "get_damage")
+end
+
+function on_message(self, message_id, message, sender)
+	if message_id == SHOOT then
+		fire(self, message.rot,  message.pos, message.to_b)
+	end
+	if message_id == GET_NEW_DAMAGE then
+		self.damage = message.new_damage
+	end
+end

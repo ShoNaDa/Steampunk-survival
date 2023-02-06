@@ -1,0 +1,104 @@
+local HERO_DIED = hash("hero_died")
+local RESET = hash("reset")
+local PROXY_UNLOADED = hash('proxy_unloaded')
+local PROXY_LOADED = hash('proxy_loaded')
+
+local nodes = {}
+
+function init(self)
+	msg.post(".", "acquire_input_focus")
+
+	nodes = { ok_node = gui.get_node("texture_ok"),
+					cancel_node = gui.get_node("texture_cancel"), 
+					reset_node = gui.get_node("texture_reset"),
+					exit_node = gui.get_node("texture_exit"),
+					continue_node = gui.get_node("continue_box"),
+					game_over_node = gui.get_node("game_over"),
+					end_box_node = gui.get_node("end_box"),
+					all_nodes = gui.get_node("all") }
+
+	self.may_continue = true
+	self.all_enabled = false
+end
+
+local function change_color(self, _pick_node)
+	--new color on picked node
+	local old_color = gui.get_color(_pick_node)
+	gui.set_color(_pick_node, vmath.vector4(0.5, 0.5, 0.5, 1))
+
+	timer.delay(1, false, function()
+		--old color
+		gui.set_color(_pick_node, old_color)
+	end)
+end
+
+function on_message(self, message_id, message, sender)
+	if message_id == HERO_DIED then
+		msg.post("/GUI#pause", "paused")
+
+		gui.set_enabled(nodes.all_nodes, true)
+		msg.post("/GUI#pause", "hide")
+		
+		if self.may_continue then
+			self.may_continue = false
+		else
+			gui.set_enabled(nodes.continue_node, false)
+			gui.set_enabled(nodes.game_over_node, false)
+			gui.set_enabled(nodes.end_box_node, true)
+		end
+		
+		timer.delay(1, false, function()
+			self.all_enabled = true
+		end)
+	end
+	
+	if message_id == RESET then
+		msg.post("/proxy#game_proxy", "unload")
+	elseif message_id == PROXY_UNLOADED then
+		msg.post("/proxy#game_proxy", "load")
+	elseif message_id == PROXY_LOADED then 
+		msg.post(sender, 'enable')
+
+		msg.post("default:/proxy#proxy_script", "reset")
+	end
+end
+
+function on_input(self, action_id, action)
+	if (self.all_enabled == true) then
+		--chech ad for continue
+		if action.pressed and gui.pick_node(nodes.ok_node, action.x, action.y) then
+			change_color(self, nodes.ok_node)
+			msg.post("default:/hero/hero", "rebel")
+			
+			--disable all nodes
+			timer.delay(1, false,  function()
+				gui.set_enabled(nodes.all_nodes, false)
+				msg.post("/GUI#pause", "unpaused")
+			end)
+		--not check ad
+		elseif action.pressed and gui.pick_node(nodes.cancel_node, action.x, action.y) then
+			change_color(self, nodes.cancel_node)
+			
+			--disable all nodes
+			timer.delay(1, false,  function()
+				gui.set_enabled(nodes.continue_node, false)
+				gui.set_enabled(nodes.game_over_node, false)
+				gui.set_enabled(nodes.end_box_node, true)
+			end)
+		--restart game
+		elseif action.pressed and gui.pick_node(nodes.reset_node, action.x, action.y) then
+			change_color(self, nodes.reset_node)
+
+			timer.delay(1, false,  function()
+				--gui.set_enabled(gui.get_node("all"), false)
+
+				--msg.post(".", "reset")
+				--msg.post("/GUI#pause", "unpaused")
+				sys.reboot()
+			end)
+		end
+
+		msg.post("/GUI#pause", "unhide")
+		self.enabled = false
+	end
+end

@@ -1,0 +1,35 @@
+local COLLISION_RESPONSE = hash("collision_response")
+local EXP = hash("exp")
+
+function init(self)
+	self.exp_to_collect = {}
+end
+
+function update(self, dt)
+	--magnet exp to hero
+	for exp,_ in pairs(self.exp_to_collect) do
+		local exp_pos = go.get_position(exp)
+		local delta = go.get_position() - exp_pos
+		go.set_position(exp_pos + delta * 5 * dt, exp)
+
+		--30 - radius hero
+		if vmath.length(delta) < 30 then
+			msg.post("/experience#exp", "exp_collected", { url = exp })
+			
+			self.exp_to_collect[exp] = nil
+		end
+	end
+end
+
+function on_message(self, message_id, message, sender)
+	if message_id == COLLISION_RESPONSE then
+		if message.group == EXP then
+			self.exp_to_collect[message.other_id] = true
+			
+			--disable collision for exp
+			local url = msg.url(message.other_id)
+			url.fragment = "collisionobject"
+			msg.post(url, "disable")
+		end
+	end
+end

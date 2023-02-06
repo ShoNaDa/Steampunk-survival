@@ -1,0 +1,20 @@
+go.property("point", 0)
+
+local EXP_COLLECTED = hash("exp_collected")
+local GET_URL = hash("get_url")
+
+function on_message(self, message_id, message, sender)
+	if message_id == GET_URL then
+		pos_exp = go.get_position(sender)
+		self.point = message.point_exp
+		
+		factory.create("#exp_factory", pos_exp, nil, { point = self.point })
+	end
+
+	--contact with hero
+	if message_id == EXP_COLLECTED then
+		msg.post("/hero/hero", "lvl_update", { point = self.point })
+
+		go.delete(message.url)
+	end
+end

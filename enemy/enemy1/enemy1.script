@@ -1,0 +1,71 @@
+go.property("HP", 20)
+go.property("damage", 10)
+go.property("lvl_point", 25)
+go.property("speed", 30)
+
+local max_speed = 30
+local damage_bullet = 0
+local pos_enemy1
+
+local GET_DAMAGE = hash("get_damage")
+local ENEMY_KILLED = hash("enemy_killed")
+local CONTACT_POINT_RESPONSE = hash("contact_point_response")
+local BULLET = hash("bullet")
+local ENEMY = hash("enemy")
+local HERO = hash("hero")
+
+local function take_damage(self, damage)
+	--subtract HP or deleted enemy
+	if (self.HP - damage) > 0 then
+		self.HP = self.HP - damage
+	else
+		msg.post("#", "enemy_killed")
+	end
+end
+
+function update(self, dt)
+	--movement with rotate
+	local pos_hero = go.get_position("/hero/hero")
+	
+	self.to = go.get_position()
+	self.from = vmath.vector3(pos_hero.x, pos_hero.y, 0)
+	self.angle = math.atan2(self.to.x - self.from.x, self.from.y - self.to.y)
+	self.rotation = vmath.quat_rotation_z(self.angle)
+	go.set_rotation(self.rotation)
+
+	self.pos = go.get_position()
+	self.distance = max_speed * dt
+	self.direction = vmath.rotate(self.rotation, vmath.vector3(0, self.distance, 0))
+	self.pos = self.pos + self.direction
+	go.set_position(self.pos)
+end
+
+function on_message(self, message_id, message, sender)
+	if message_id == CONTACT_POINT_RESPONSE then
+		--enemy contact with other enemy
+		if message.other_group == ENEMY then
+			local new_pos = go.get_position() + message.normal * message.distance
+			go.set_position(new_pos)
+		--enemy contact with hero
+		elseif message.other_group == HERO then
+			msg.post("/hero/hero", "get_damage", { damage = self.damage })
+		--enemy contact with bullet
+		elseif  message.other_group == BULLET then
+			go.delete(message.other_id)
+			
+			take_damage(self, damage_bullet)
+		end
+	end
+	if message_id == ENEMY_KILLED then
+		--send url to exp
+		msg.post("/experience#exp", "get_url", { point_exp = self.lvl_point })
+		
+		--remove enemy
+		go.delete()
+	end
+	if message_id == GET_DAMAGE then
+		--get damage
+		local url_bullet = msg.url("/hero/bullet_go#bullet")
+		damage_bullet = go.get(url_bullet, "damage")
+	end
+end

@@ -1,0 +1,52 @@
+local LIFE_UPDATE = hash("life_update")
+local LIFE_MAX_UPDATE = hash("life_max_update")
+
+local url_of_script = nil
+local progress = {}
+local life = 100
+local max_life = 100
+local ratio = {}
+local color = {red = vmath.vector4(0.9, 0, 0, 1), orange = vmath.vector4(1, 0.5, 0, 1), green = vmath.vector4(0, 0.8, 0, 1)}
+
+local function changeColor(gui)
+	if life < (max_life / 3) then
+		gui.set_color(progress.node, color.red)
+	elseif life >= (max_life / 3) and life <= ((max_life / 3) * 2) then
+		gui.set_color(progress.node, color.orange)
+	elseif life > ((max_life / 3) * 2) then
+		gui.set_color(progress.node, color.green)
+	end
+end
+
+--life to max life
+local function sizeProgress(gui)
+	ratio = life / max_life
+	progress.size.x = ratio * progress.maxWidth
+	gui.set_size(progress.node, progress.size)
+	changeColor(gui)
+end
+
+function init(self)
+	progress = {size = vmath.vector3(0, 60, 0), maxWidth = 500, node = gui.get_node("progress")}
+	sizeProgress(gui)
+end
+
+function on_message(self, message_id, message, sender)
+	if message_id == LIFE_UPDATE then
+		life = message.life
+		sizeProgress(gui)
+
+		--edit number of HP
+		local hp = gui.get_node("HP")
+		gui.set_text(hp, (life .. "/" .. max_life))
+	end
+	if message_id == LIFE_MAX_UPDATE then
+		max_life = message.max_life
+		life = message.life
+		sizeProgress(gui)
+
+		--edit number of HP
+		local hp = gui.get_node("HP")
+		gui.set_text(hp, (life .. "/" .. max_life))
+	end
+end

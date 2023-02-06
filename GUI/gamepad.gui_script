@@ -1,0 +1,150 @@
+go.property("position", vmath.vector3())
+
+local REGISTER = hash("register")
+
+local game_paused = false
+
+--func send msg to hero
+local function post_to_listener(self, message_id, message)
+	if self.listener then
+		msg.post(self.listener, message_id, message or {})
+	end
+end
+
+--func movement slider
+local function on_slider(self, touch, control)
+	if not game_paused then
+		local touch_position = vmath.vector3(touch.x, touch.y, 0)
+		--move slider if press
+		if touch.pressed then
+			gui.cancel_animation(control.node, gui.PROP_POSITION)
+			control.slider_pos = touch_position
+			control.slider_offset = touch_position - control.node_start_position
+		--set slider on start position
+		elseif touch.released then
+		--move slider
+			gui.animate(control.node, gui.PROP_POSITION, control.node_start_position, gui.EASING_OUTQUAD, 0.2)
+
+			--hero need stay
+			post_to_listener(self, "slider", { move = false, rot = rotation }) 
+		--when movement slider - hero move 
+		else
+			local diff = control.slider_pos - touch_position
+			local dir = vmath.normalize(diff)
+			local distance = vmath.length(diff)
+			
+			if distance > 0 then
+				local radius = 80
+				if distance > radius then
+					touch_position = control.node_start_position - dir * radius
+					distance = radius
+				else
+					touch_position = touch_position - control.slider_offset	
+				end
+
+				--move slider
+				gui.set_position(control.node, touch_position)
+
+				--calculate rotation for hero
+				local from = vmath.vector3(touch_position.x, touch_position.y, 0)
+				local angle = math.atan2(self.position.x - from.x, from.y - self.position.y)
+				rotation = vmath.quat_rotation_z(angle)
+				
+				--hero need move
+				post_to_listener(self, "slider", { move = true, rot = rotation }) 
+			end
+		end
+	end
+end
+
+--search slider in touch position
+local function find_control_for_xy(self, x, y)
+	for _,control in pairs(self.controls) do
+		if gui.pick_node(control.node, x, y) then
+			return control
+		end
+	end
+end
+
+--search slider in touch index (0 - press on slider / nil - release)
+local function find_control_for_touch_index(self, touch_index)
+	for _,control in pairs(self.controls) do
+		if control.touch_index == touch_index then
+			return control
+		end
+	end
+end
+
+--make table with info about node
+local function register(self, node, fn)
+	if not self.controls then self.controls = {} end
+	self.controls[node] = {
+		node_start_position = gui.get_position(node),
+		node = node,
+		pressed = false,
+		fn = fn,
+	}
+end
+
+function init(self)
+	msg.post(".", "acquire_input_focus")
+
+	self.position = gui.get_position(gui.get_node("slider"))
+	
+	--register slider
+	register(self, gui.get_node("slider"), on_slider)
+end
+
+function update(self, dt)
+	if dt == 0 then
+		game_paused = true
+		gui.set_enabled(gui.get_node("slider"), false)
+		gui.set_enabled(gui.get_node("back"), false)
+	else 
+		game_paused = false 
+		gui.set_enabled(gui.get_node("slider"), true)
+		gui.set_enabled(gui.get_node("back"), true)
+	end
+end
+
+function on_message(self, message_id, message, sender)
+	if message_id == REGISTER then
+		--get url hero
+		self.listener = sender
+	end
+end
+
+local function handle_touch(self, touch, touch_index)
+	if not game_paused then
+		--if press on slider
+		if touch.pressed then
+			local control = find_control_for_xy(self, touch.x, touch.y)
+			if control and not control.pressed then
+				control.pressed = true
+				control.touch_index = touch_index
+				control.fn(self, touch, control)
+			end
+		--if release slider
+		elseif touch.released then
+			local control = find_control_for_touch_index(self, touch_index)
+			if control then
+				control.pressed = false
+				control.touch_index = nil
+				control.fn(self, touch, control)
+			end
+		--if simple movement mouse
+		else
+			local control = find_control_for_touch_index(self, touch_index)
+			if control then
+				control.fn(self, touch, control)
+			end
+		end
+	end
+end
+
+function on_input(self, action_id, action)
+	--action is smartphone touch position
+	if not action.touch then
+		handle_touch(self, action, 0)
+	end
+end

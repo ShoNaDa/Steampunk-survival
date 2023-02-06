@@ -1,0 +1,71 @@
+image: "/resources/ground/Nature/Rocks.png"
+tile_width: 16
+tile_height: 16
+tile_margin: 0
+tile_spacing: 0
+collision: "/resources/ground/Nature/Rocks.png"
+material_tag: "tile"
+convex_hulls {
+  index: 0
+  count: 9
+  collision_group: ""
+}
+convex_hulls {
+  index: 9
+  count: 9
+  collision_group: ""
+}
+convex_hulls {
+  index: 18
+  count: 9
+  collision_group: ""
+}
+convex_hulls {
+  index: 27
+  count: 9
+  collision_group: ""
+}
+convex_hulls {
+  index: 36
+  count: 9
+  collision_group: ""
+}
+convex_hulls {
+  index: 45
+  count: 9
+  collision_group: ""
+}
+convex_hulls {
+  index: 54
+  count: 9
+  collision_group: ""
+}
+convex_hulls {
+  index: 63
+  count: 9
+  collision_group: ""
+}
+convex_hulls {
+  index: 72
+  count: 9
+  collision_group: ""
+}
+convex_hulls {
+  index: 81
+  count: 9
+  collision_group: ""
+}
+convex_hulls {
+  index: 90
+  count: 9
+  collision_group: ""
+}
+convex_hulls {
+  index: 99
+  count: 9
+  collision_group: "wall"
+}
+collision_groups: "wall"
+extrude_borders: 2
+inner_padding: 0
+sprite_trim_mode: SPRITE_TRIM_MODE_OFF
