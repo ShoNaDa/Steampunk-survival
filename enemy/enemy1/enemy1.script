@@ -49,11 +49,6 @@ function on_message(self, message_id, message, sender)
 		--enemy contact with hero
 		elseif message.other_group == HERO then
 			msg.post("/hero/hero", "get_damage", { damage = self.damage })
-		--enemy contact with bullet
-		elseif  message.other_group == BULLET then
-			go.delete(message.other_id)
-			
-			take_damage(self, damage_bullet)
 		end
 	end
 	if message_id == ENEMY_KILLED then
@@ -65,7 +60,8 @@ function on_message(self, message_id, message, sender)
 	end
 	if message_id == GET_DAMAGE then
 		--get damage
-		local url_bullet = msg.url("/hero/bullet_go#bullet")
-		damage_bullet = go.get(url_bullet, "damage")
+		go.delete(sender)
+
+		take_damage(self, message.dmg)
 	end
 end

@@ -235,7 +235,7 @@ embedded_instances {
   id: "abilities"
   data: "components {\n"
   "  id: \"shut_back\"\n"
-  "  component: \"/ability/shut_back.script\"\n"
+  "  component: \"/ability/shoot_back.script\"\n"
   "  position {\n"
   "    x: 0.0\n"
   "    y: 0.0\n"

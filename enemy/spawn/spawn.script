@@ -19,7 +19,8 @@ end
 function on_message(self, message_id, message, sender)
 	if message_id == RESPONSE then
 		--spawn enemy in rand place
-		factory.create("#enemy1_factory", rand_factory(self, math.random(1, 4)), nil, { damage = go.get("/enemy1#enemy1", "damage") })
+		local id = factory.create("#enemy1_factory", rand_factory(self, math.random(1, 4)), nil, { damage = go.get("/enemy1#enemy1", "damage") })
+		
 		--set new pos
 		go.set_position(rand_factory(self, math.random(1, 4)))
 

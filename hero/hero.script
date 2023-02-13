@@ -120,7 +120,7 @@ function on_message(self, message_id, message, sender)
 		local position = go.get_position() + vmath.rotate(rotation, vmath.vector3(5, -10, 0))
 		local to = position + vmath.rotate(rotation, vmath.vector3(0, 1000, 0))
 		
-		local props = { rot = rotation, pos = position, to_b = to }
+		local props = { rot = rotation, pos = position, to_b = to, damage = go.get("/hero/bullet_go#bullet", "damage") }
 		
 		msg.post("/hero/bullet_go#bullet", "shoot", props)
 		timer.delay(self.fire_speed, false, function() msg.post(".", "shoot") end)
@@ -135,6 +135,9 @@ function on_message(self, message_id, message, sender)
 			lvl_progress = lvl_progress - max_lvl_progress
 			
 			self.lvl = self.lvl + 1
+
+			local llvl = go.get("/abilities#shut_back", "lvl")
+			go.set("/abilities#shut_back", "lvl", llvl + 1)
 
 			msg.post("main:/GUI#lvl", "lvl_up", { lvl = self.lvl })
 

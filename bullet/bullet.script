@@ -5,30 +5,31 @@ local distance = 500
 local duration = distance / 250
 
 local SHOOT = hash("shoot")
-local GET_NEW_DAMAGE = hash("get_new_damage")
+local SHOOT_BACK = hash("shoot_back")
 
-function init(self)
-	msg.post("/hero/hero", "get_new_damage", { damage = self.damage })
-end
+local CONTACT_POINT_RESPONSE = hash("contact_point_response")
+local BULLET = hash("bullet")
+local ENEMY = hash("enemy")
 
-local function fire(self, rotation, position, to)
+local function fire(self, rotation, position, to, dmg)
 	--create bullet
 	local bullet_factory = "#bullet_factory"
-	local id_bullet = factory.create(bullet_factory, position, rotation, { damage = self.damage })
-
+	local id_bullet = factory.create(bullet_factory, position, rotation, { damage = dmg })
+	
 	--animate bullet
 	go.animate(id_bullet, "position", go.PLAYBACK_ONCE_FORWARD, to, go.EASING_LINEAR, duration, 0, function()
 		go.delete(id_bullet) end)
-		
-	--send url
-	msg.post("/enemy1#enemy1", "get_damage")
 end
 
 function on_message(self, message_id, message, sender)
 	if message_id == SHOOT then
-		fire(self, message.rot,  message.pos, message.to_b)
+		fire(self, message.rot,  message.pos, message.to_b, message.damage)
 	end
-	if message_id == GET_NEW_DAMAGE then
-		self.damage = message.new_damage
+
+	if message_id == CONTACT_POINT_RESPONSE then
+		--bullet contact with enemy
+		if message.other_group == ENEMY then
+				msg.post(message.other_id, "get_damage", { dmg = self.damage })
+		end
 	end
 end

@@ -1,0 +1,44 @@
+go.property("cooldown", 0)
+go.property("damage", 0)
+go.property("lvl", 1)
+
+local SHOOT_BACK = hash("shoot_back")
+
+local function shoot_back(cooldown, damage)
+	timer.delay(cooldown, true, function()
+		local rotation = go.get_rotation("/hero/hero")
+		rotation = vmath.quat(rotation.x, rotation.y, rotation.w * -1, rotation.z)
+		local position = go.get_position("/hero/hero") + vmath.rotate(rotation, vmath.vector3(5, -10, 0))
+		local to = position + vmath.rotate(rotation, vmath.vector3(0, 1000, 0))
+
+		local props = { rot = rotation, pos = position, to_b = to, damage = damage }
+
+		msg.post("/hero/bullet_go#bullet", "shoot", props) 
+	end)
+end
+
+function init(self)
+	msg.post(".", "shoot_back")
+end
+
+function on_message(self, message_id, message, sender)
+	if message_id == SHOOT_BACK then
+		if (self.lvl == 1) then
+			self.damage = go.get("/hero/bullet_go#bullet", "damage") / 2 
+			self.cooldown = 4
+		elseif (self.lvl == 2) then
+			self,damage = go.get("/hero/bullet_go#bullet", "damage")
+			self.cooldown = 4
+		elseif (self.lvl == 3) then
+			self,damage = go.get("/hero/bullet_go#bullet", "damage")
+			self.cooldown = 2 
+		elseif (self.lvl == 4) then
+			self,damage = go.get("/hero/bullet_go#bullet", "damage")
+			self.cooldown = go.get("/hero/hero", "fire_speed") 
+		elseif (self.lvl == 5) then
+			--tut nihua nebude 
+		end
+		
+		shoot_back(self.cooldown, self.damage)
+	end
+end
