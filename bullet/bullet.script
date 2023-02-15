@@ -6,7 +6,6 @@ local duration = distance / 250
 
 local SHOOT = hash("shoot")
 local SHOOT_BACK = hash("shoot_back")
-
 local CONTACT_POINT_RESPONSE = hash("contact_point_response")
 local BULLET = hash("bullet")
 local ENEMY = hash("enemy")

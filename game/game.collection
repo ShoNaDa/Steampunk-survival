@@ -233,9 +233,68 @@ embedded_instances {
 }
 embedded_instances {
   id: "abilities"
+  children: "shoot_back"
+  children: "shoot_offhand"
+  data: ""
+  position {
+    x: 0.0
+    y: 0.0
+    z: 0.0
+  }
+  rotation {
+    x: 0.0
+    y: 0.0
+    z: 0.0
+    w: 1.0
+  }
+  scale3 {
+    x: 1.0
+    y: 1.0
+    z: 1.0
+  }
+}
+embedded_instances {
+  id: "shoot_back"
   data: "components {\n"
-  "  id: \"shut_back\"\n"
+  "  id: \"shoot_back\"\n"
   "  component: \"/ability/shoot_back.script\"\n"
+  "  position {\n"
+  "    x: 0.0\n"
+  "    y: 0.0\n"
+  "    z: 0.0\n"
+  "  }\n"
+  "  rotation {\n"
+  "    x: 0.0\n"
+  "    y: 0.0\n"
+  "    z: 0.0\n"
+  "    w: 1.0\n"
+  "  }\n"
+  "  property_decls {\n"
+  "  }\n"
+  "}\n"
+  ""
+  position {
+    x: 0.0
+    y: 0.0
+    z: 0.0
+  }
+  rotation {
+    x: 0.0
+    y: 0.0
+    z: 0.0
+    w: 1.0
+  }
+  scale3 {
+    x: 1.0
+    y: 1.0
+    z: 1.0
+  }
+}
+embedded_instances {
+  id: "shoot_offhand"
+  data: "components {\n"
+  "  id: \"shoot_offhand\"\n"
+  "  component: \"/ability/shoot_offhand.script\"\n"
   "  position {\n"
   "    x: 0.0\n"
   "    y: 0.0\n"

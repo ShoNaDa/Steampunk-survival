@@ -1,0 +1,56 @@
+go.property("lvl", 1)
+go.property("count", 0)
+go.property("cooldown", 0)
+
+local SEND_MSG_BACK = hash("send_msg_back")
+local SHOOT_OFFHAND = hash("shoot_offhand")
+
+local id_timer = nil
+local count = 0
+
+local function shoot_offhand(self, cooldown, count)
+	timer.delay(cooldown, false, function()
+		self.count_bullet = 1
+		
+		self.id_timer = timer.delay(0.5, true, function()
+			msg.post("/hero/hero#hero_script", "shoot")
+
+			self.count_bullet = self.count_bullet + 1
+		end)
+	end)
+end
+
+function init(self)
+	msg.post(".", "send_msg_back")
+
+	self.count_bullet = 0
+	self.id_timer = nil
+end
+
+function update(self, dt)
+	if (self.count_bullet == self.count) then
+		print(self.id_timer)
+		timer.cancel(self.id_timer)
+	end
+end
+
+function on_message(self, message_id, message, sender)
+	if message_id == SHOOT_OFFHAND then
+		--shoot 2 bullet
+		if (self.lvl == 1) then
+			self.cooldown = 5
+			self.count = 2
+		elseif (self.lvl == 2) then
+		elseif (self.lvl == 3) then
+		elseif (self.lvl == 4) then
+		elseif (self.lvl == 5) then
+			--tut nihua nebude 
+		end
+
+		shoot_offhand(self, self.cooldown, self,count)
+	end
+	
+	if message_id == SEND_MSG_BACK then
+		msg.post(".", "shoot_offhand")
+	end
+end

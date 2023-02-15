@@ -12,7 +12,6 @@ local rotation_hero = vmath.quat()
 local game_paused = false
 
 local GET_NEW_CHARACT = hash("get_new_charact")
-local GET_NEW_DAMAGE = hash("get_new_damage")
 local LVL_UPDATE = hash("lvl_update")
 local SHOOT = hash("shoot")
 local GET_DAMAGE = hash("get_damage")
@@ -31,6 +30,7 @@ function init(self)
 	timer.delay(self.fire_speed, false, function() msg.post(".", "shoot") end)
 	
 	self.move = 0
+	self.damage = go.get("/hero/bullet_go#bullet", "damage")
 end
 
 local function take_damage(self, damage)
@@ -135,10 +135,7 @@ function on_message(self, message_id, message, sender)
 			lvl_progress = lvl_progress - max_lvl_progress
 			
 			self.lvl = self.lvl + 1
-
-			local llvl = go.get("/abilities#shut_back", "lvl")
-			go.set("/abilities#shut_back", "lvl", llvl + 1)
-
+			
 			msg.post("main:/GUI#lvl", "lvl_up", { lvl = self.lvl })
 
 			local charact = { lvl = self.lvl, hp = max_HP, speed = max_speed, damage = self.damage }
@@ -163,12 +160,7 @@ function on_message(self, message_id, message, sender)
 		msg.post("main:/GUI#helth", "life_max_update", { max_life = max_HP, life = self.hp })
 
 		--for bullet
-		msg.post("/hero/bullet_go#bullet", "get_new_damage", { new_damage = self.damage })
-	end
-
-	--get new damage
-	if message_id == GET_NEW_DAMAGE then
-		self.damage = message.damage
+		go.set("/hero/bullet_go#bullet", "damage", self.damage)
 	end
 			
 	--if movement with slider - set rotation

@@ -49,6 +49,7 @@ end
 
 function on_message(self, message_id, message, sender)
 	if message_id == LVL_UP then
+		--show characteristic message
 		if message.characts.lvl % lvl_ability ~= 0 then
 			msg.post("/GUI#pause", "paused")
 			gui.set_enabled(gui.get_node("all"), true)
@@ -67,9 +68,10 @@ function on_message(self, message_id, message, sender)
 			timer.delay(1, false, function()
 				self.all_enabled = true
 			end)
+			--show ability message
 		else
 			--ЗДЕСЬ ДОЛЖЕН БЫТЬ ВЫБОР
-			msg.post("/abilities#shut_back", "chose_ability")
+			--msg.post("/shoot_back#shoot_back", "chose_ability")
 		end
 	end
 end

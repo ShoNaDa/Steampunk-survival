@@ -3,9 +3,12 @@ go.property("damage", 0)
 go.property("lvl", 1)
 
 local SHOOT_BACK = hash("shoot_back")
+local SEND_MSG_BACK = hash("send_msg_back")
 
-local function shoot_back(cooldown, damage)
-	timer.delay(cooldown, true, function()
+--for shoot back
+local function shoot_back(self, cooldown, damage)
+	
+	timer.delay(cooldown, false, function()
 		local rotation = go.get_rotation("/hero/hero")
 		rotation = vmath.quat(rotation.x, rotation.y, rotation.w * -1, rotation.z)
 		local position = go.get_position("/hero/hero") + vmath.rotate(rotation, vmath.vector3(5, -10, 0))
@@ -14,31 +17,33 @@ local function shoot_back(cooldown, damage)
 		local props = { rot = rotation, pos = position, to_b = to, damage = damage }
 
 		msg.post("/hero/bullet_go#bullet", "shoot", props) 
+		msg.post(".", "send_msg_back")
 	end)
-end
-
-function init(self)
-	msg.post(".", "shoot_back")
 end
 
 function on_message(self, message_id, message, sender)
 	if message_id == SHOOT_BACK then
+		--dmg back bullet = 1/2 dmg main bullet
 		if (self.lvl == 1) then
-			self.damage = go.get("/hero/bullet_go#bullet", "damage") / 2 
+			self.damage = go.get("/hero/bullet_go#bullet", "damage") / 2
 			self.cooldown = 4
+		--dmg back bullet = dmg main bullet
 		elseif (self.lvl == 2) then
-			self,damage = go.get("/hero/bullet_go#bullet", "damage")
-			self.cooldown = 4
+			self.damage = go.get("/hero/bullet_go#bullet", "damage")
+		--cd = 2 sec
 		elseif (self.lvl == 3) then
-			self,damage = go.get("/hero/bullet_go#bullet", "damage")
-			self.cooldown = 2 
+			self.cooldown = 2
+		--cd back bullet = cd main bullet
 		elseif (self.lvl == 4) then
-			self,damage = go.get("/hero/bullet_go#bullet", "damage")
-			self.cooldown = go.get("/hero/hero", "fire_speed") 
+			self.cooldown = go.get("/hero/hero#hero_script", "fire_speed") 
 		elseif (self.lvl == 5) then
 			--tut nihua nebude 
 		end
 		
-		shoot_back(self.cooldown, self.damage)
+		shoot_back(self, self.cooldown, self.damage)
+	end
+
+	if message_id == SEND_MSG_BACK then
+		msg.post(".", "shoot_back")
 	end
 end
