@@ -3,6 +3,7 @@ scale_along_z: 0
 embedded_instances {
   id: "hero"
   children: "bullet_go"
+  children: "electrolyte_go"
   data: "components {\n"
   "  id: \"hero_script\"\n"
   "  component: \"/hero/hero.script\"\n"
@@ -277,6 +278,61 @@ embedded_instances {
   position {
     x: -6150.0
     y: -4600.0
+    z: 0.0
+  }
+  rotation {
+    x: 0.0
+    y: 0.0
+    z: 0.0
+    w: 1.0
+  }
+  scale3 {
+    x: 1.0
+    y: 1.0
+    z: 1.0
+  }
+}
+embedded_instances {
+  id: "electrolyte_go"
+  data: "components {\n"
+  "  id: \"electrolyte_bullet\"\n"
+  "  component: \"/ability/electrolyte_bullet/electrolyte_bullet.script\"\n"
+  "  position {\n"
+  "    x: 0.0\n"
+  "    y: 0.0\n"
+  "    z: 0.0\n"
+  "  }\n"
+  "  rotation {\n"
+  "    x: 0.0\n"
+  "    y: 0.0\n"
+  "    z: 0.0\n"
+  "    w: 1.0\n"
+  "  }\n"
+  "  property_decls {\n"
+  "  }\n"
+  "}\n"
+  "embedded_components {\n"
+  "  id: \"electrolyte_factory\"\n"
+  "  type: \"factory\"\n"
+  "  data: \"prototype: \\\"/ability/electrolyte_bullet/electrolyte_bullet.go\\\"\\n"
+  "load_dynamically: false\\n"
+  "\"\n"
+  "  position {\n"
+  "    x: 0.0\n"
+  "    y: 0.0\n"
+  "    z: 0.0\n"
+  "  }\n"
+  "  rotation {\n"
+  "    x: 0.0\n"
+  "    y: 0.0\n"
+  "    z: 0.0\n"
+  "    w: 1.0\n"
+  "  }\n"
+  "}\n"
+  ""
+  position {
+    x: 0.0
+    y: 0.0
     z: 0.0
   }
   rotation {

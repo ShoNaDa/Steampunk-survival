@@ -1,0 +1,77 @@
+go.property("cooldown", 0)
+go.property("lvl", 1)
+go.property("count_goals", 0)
+
+local ELECTROLYTE = hash("electrolyte")
+
+local enemies_in_zone_electro = {}
+
+function init(self)
+	msg.post(".", "electrolyte")
+end
+
+local function shoot_electrolyte(self, cooldown, count_goals)
+	timer.delay(cooldown, false, function()
+		msg.post("/hero/bullet_go#bullet", "electrolyte")
+
+		
+	end)
+end
+
+function on_message(self, message_id, message, sender)
+	if message_id == ELECTROLYTE then
+		--shoot to one enemy
+		if (self.lvl == 1) then
+			self.cooldown = 5
+			self.count_goals = 1
+		--shoot to two enemy
+		elseif (self.lvl == 2) then
+		--dmg electrolyte = dmg bullet
+		elseif (self.lvl == 3) then
+		--shoot to three enemy	
+		elseif (self.lvl == 4) then
+		--tut pizdec
+		elseif (self.lvl == 5) then
+		end
+
+		shoot_electrolyte(self, self.cooldown, self.count_goals)
+	end
+	
+	--if enemy in collision
+	if message_id == hash("in") then
+		local may_add = true
+
+		--check exist enemy in array
+		for _,enemy in pairs(enemies_in_zone_electro) do
+			if enemy == message.id then
+				may_add = false
+			end
+		end
+
+		if may_add then
+			local length = table.getn(enemies_in_zone_electro) + 1
+			enemies_in_zone_electro[length] = message.id
+		end
+	--if enemy out collision
+	elseif message_id == hash("out") then
+		for index,enemy in pairs(enemies_in_zone_electro) do
+			if enemy == message.id then
+				enemies_in_zone_electro[index] = nil
+			end
+		end
+	end
+
+	--if enemy in collision
+	if message_id == hash("check_around") then
+		for index,enemy in pairs(enemies_in_zone_electro) do
+			--not attached enemy
+			if enemy ~= message.id then
+				local electrolyte_factory = "#electrolyte_factory"
+				local id_electrolyte = factory.create(electrolyte_factory, go.get_position("/hero/hero"))
+
+				go.animate(id_electrolyte, "position", go.PLAYBACK_ONCE_FORWARD, go.get_position(enemy), go.EASING_LINEAR, 1, 0, function()
+					go.delete(id_electrolyte) end)
+			end
+		end
+	end
+end

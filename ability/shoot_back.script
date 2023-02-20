@@ -3,7 +3,6 @@ go.property("damage", 0)
 go.property("lvl", 1)
 
 local SHOOT_BACK = hash("shoot_back")
-local SEND_MSG_BACK = hash("send_msg_back")
 
 --for shoot back
 local function shoot_back(self, cooldown, damage)
@@ -17,7 +16,7 @@ local function shoot_back(self, cooldown, damage)
 		local props = { rot = rotation, pos = position, to_b = to, damage = damage }
 
 		msg.post("/hero/bullet_go#bullet", "shoot", props) 
-		msg.post(".", "send_msg_back")
+		msg.post(".", "shoot_back")
 	end)
 end
 
@@ -41,9 +40,5 @@ function on_message(self, message_id, message, sender)
 		end
 		
 		shoot_back(self, self.cooldown, self.damage)
-	end
-
-	if message_id == SEND_MSG_BACK then
-		msg.post(".", "shoot_back")
 	end
 end

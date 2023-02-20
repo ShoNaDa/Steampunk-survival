@@ -2,35 +2,33 @@ go.property("lvl", 1)
 go.property("count", 0)
 go.property("cooldown", 0)
 
-local SEND_MSG_BACK = hash("send_msg_back")
 local SHOOT_OFFHAND = hash("shoot_offhand")
 
 local id_timer = nil
-local count = 0
+local count_bullet = -1
 
 local function shoot_offhand(self, cooldown, count)
 	timer.delay(cooldown, false, function()
-		self.count_bullet = 1
+		count_bullet = 1
 		
-		self.id_timer = timer.delay(0.5, true, function()
-			msg.post("/hero/hero#hero_script", "shoot")
+		id_timer = timer.delay(0.2, true, function()
+			local rotation = go.get_rotation("/hero/hero")
+			local position = go.get_position("/hero/hero") + vmath.rotate(rotation, vmath.vector3(5, -10, 0))
+			local to = position + vmath.rotate(rotation, vmath.vector3(0, 1000, 0))
+			local props = { rot = rotation, pos = position, to_b = to, damage = damage }
 
-			self.count_bullet = self.count_bullet + 1
+			msg.post("/hero/bullet_go#bullet", "shoot", props) 
+
+			count_bullet = count_bullet + 1
 		end)
+
+		msg.post(".", "shoot_offhand")
 	end)
 end
 
-function init(self)
-	msg.post(".", "send_msg_back")
-
-	self.count_bullet = 0
-	self.id_timer = nil
-end
-
 function update(self, dt)
-	if (self.count_bullet == self.count) then
-		print(self.id_timer)
-		timer.cancel(self.id_timer)
+	if (count_bullet == self.count) then
+		timer.cancel(id_timer)
 	end
 end
 
@@ -48,9 +46,5 @@ function on_message(self, message_id, message, sender)
 		end
 
 		shoot_offhand(self, self.cooldown, self,count)
-	end
-	
-	if message_id == SEND_MSG_BACK then
-		msg.post(".", "shoot_offhand")
 	end
 end

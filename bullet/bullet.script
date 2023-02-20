@@ -5,10 +5,14 @@ local distance = 500
 local duration = distance / 250
 
 local SHOOT = hash("shoot")
-local SHOOT_BACK = hash("shoot_back")
 local CONTACT_POINT_RESPONSE = hash("contact_point_response")
-local BULLET = hash("bullet")
 local ENEMY = hash("enemy")
+local ELECTROLYTE = hash("electrolyte")
+local TRIGGER_RESPONSE = hash("trigger_response")
+
+function init(self)
+	self.have_electo = false
+end
 
 local function fire(self, rotation, position, to, dmg)
 	--create bullet
@@ -25,10 +29,23 @@ function on_message(self, message_id, message, sender)
 		fire(self, message.rot,  message.pos, message.to_b, message.damage)
 	end
 
+	if message_id == ELECTROLYTE then
+		self.have_electo = true
+	end
+
 	if message_id == CONTACT_POINT_RESPONSE then
 		--bullet contact with enemy
 		if message.other_group == ENEMY then
-				msg.post(message.other_id, "get_damage", { dmg = self.damage })
+			msg.post(message.other_id, "get_damage", { dmg = self.damage })
+
+			msg.post("/hero/electrolyte_go#electrolyte_bullet", "check_around", { id = message.other_id })
+		end
+	--for adding enemies to table
+	elseif message_id == TRIGGER_RESPONSE then
+		if message.other_group == ENEMY and message.enter == true then
+			msg.post("/hero/electrolyte_go#electrolyte_bullet", "in", { id = message.other_id })
+		elseif message.other_group == ENEMY and message.enter == false then
+			msg.post("/hero/electrolyte_go#electrolyte_bullet", "out", { id = message.other_id })
 		end
 	end
 end
