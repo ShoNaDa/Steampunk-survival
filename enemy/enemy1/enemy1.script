@@ -4,13 +4,10 @@ go.property("lvl_point", 25)
 go.property("speed", 30)
 
 local max_speed = 30
-local damage_bullet = 0
-local pos_enemy1
 
 local GET_DAMAGE = hash("get_damage")
 local ENEMY_KILLED = hash("enemy_killed")
 local CONTACT_POINT_RESPONSE = hash("contact_point_response")
-local BULLET = hash("bullet")
 local ENEMY = hash("enemy")
 local HERO = hash("hero")
 

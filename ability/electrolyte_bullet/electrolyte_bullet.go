@@ -1,3 +1,18 @@
+components {
+  id: "electrolyte_bullet"
+  component: "/ability/electrolyte_bullet/electrolyte_bullet.script"
+  position {
+    x: 0.0
+    y: 0.0
+    z: 0.0
+  }
+  rotation {
+    x: 0.0
+    y: 0.0
+    z: 0.0
+    w: 1.0
+  }
+}
 embedded_components {
   id: "sprite"
   type: "sprite"
@@ -16,6 +31,11 @@ embedded_components {
     y: 0.0
     z: 0.0
     w: 1.0
+  }
+  scale {
+    x: 2.0
+    y: 2.0
+    z: 1.0
   }
 }
 embedded_components {
@@ -45,7 +65,7 @@ embedded_components {
   "    index: 0\n"
   "    count: 1\n"
   "  }\n"
-  "  data: 21.915\n"
+  "  data: 44.588\n"
   "}\n"
   "linear_damping: 0.0\n"
   "angular_damping: 0.0\n"

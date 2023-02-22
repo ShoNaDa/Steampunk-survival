@@ -3,18 +3,25 @@ go.property("lvl", 1)
 go.property("count_goals", 0)
 
 local ELECTROLYTE = hash("electrolyte")
+local ENEMY = hash("enemy")
+local CONTACT_POINT_RESPONSE = hash("contact_point_response")
+local IN = hash("in")
+local OUT = hash("out")
+local CHECK_AROUND = hash("check_around")
 
 local enemies_in_zone_electro = {}
+local electro_enemy = {}
 
 function init(self)
 	msg.post(".", "electrolyte")
 end
 
+function update(self, dt)
+end
+
 local function shoot_electrolyte(self, cooldown, count_goals)
 	timer.delay(cooldown, false, function()
 		msg.post("/hero/bullet_go#bullet", "electrolyte")
-
-		
 	end)
 end
 
@@ -38,11 +45,11 @@ function on_message(self, message_id, message, sender)
 	end
 	
 	--if enemy in collision
-	if message_id == hash("in") then
+	if message_id == IN then
 		local may_add = true
 
 		--check exist enemy in array
-		for _,enemy in pairs(enemies_in_zone_electro) do
+		for index,enemy in pairs(enemies_in_zone_electro) do
 			if enemy == message.id then
 				may_add = false
 			end
@@ -53,7 +60,7 @@ function on_message(self, message_id, message, sender)
 			enemies_in_zone_electro[length] = message.id
 		end
 	--if enemy out collision
-	elseif message_id == hash("out") then
+	elseif message_id == OUT then
 		for index,enemy in pairs(enemies_in_zone_electro) do
 			if enemy == message.id then
 				enemies_in_zone_electro[index] = nil
@@ -62,16 +69,36 @@ function on_message(self, message_id, message, sender)
 	end
 
 	--if enemy in collision
-	if message_id == hash("check_around") then
+	if message_id == CHECK_AROUND then
 		for index,enemy in pairs(enemies_in_zone_electro) do
 			--not attached enemy
 			if enemy ~= message.id then
 				local electrolyte_factory = "#electrolyte_factory"
-				local id_electrolyte = factory.create(electrolyte_factory, go.get_position("/hero/hero"))
+				local id_electrolyte = factory.create(electrolyte_factory, go.get_position(message.id))
 
-				go.animate(id_electrolyte, "position", go.PLAYBACK_ONCE_FORWARD, go.get_position(enemy), go.EASING_LINEAR, 1, 0, function()
-					go.delete(id_electrolyte) end)
+				electro_enemy[id_electrolyte] = enemy
+				
+				go.animate(id_electrolyte, "position", go.PLAYBACK_ONCE_FORWARD, go.get_position(enemy), go.EASING_LINEAR, 0.1, 0)
 			end
 		end
+
+		enemies_in_zone_electro = {}
+	end
+
+	if message_id == CONTACT_POINT_RESPONSE then
+		--electrotyne contact with enemy
+		if message.other_group == ENEMY and electro_enemy[go.get_id()] == message.other_id then
+			go.delete()
+
+			electro_enemy[go.get_id()] = nil
+		end
+	end
+
+	if message_id == hash("create") then
+		local electro_factory = "#electrolyte_factory"
+		local id_electro = factory.create(electro_factory, go.get_position(message.id))
+
+		go.animate(id_electro, "position", go.PLAYBACK_ONCE_FORWARD, message.to, go.EASING_LINEAR, message.dur, 0, function()
+			go.delete(id_electro) end)
 	end
 end
