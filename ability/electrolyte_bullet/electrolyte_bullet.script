@@ -1,6 +1,7 @@
 go.property("cooldown", 0)
 go.property("lvl", 1)
 go.property("count_goals", 0)
+go.property("damage", 5)
 
 local ELECTROLYTE = hash("electrolyte")
 local ENEMY = hash("enemy")
@@ -8,6 +9,7 @@ local CONTACT_POINT_RESPONSE = hash("contact_point_response")
 local IN = hash("in")
 local OUT = hash("out")
 local CHECK_AROUND = hash("check_around")
+local CREATE_ELECTRO = hash("create_electro")
 
 local enemies_in_zone_electro = {}
 local electro_enemy = {}
@@ -16,10 +18,7 @@ function init(self)
 	msg.post(".", "electrolyte")
 end
 
-function update(self, dt)
-end
-
-local function shoot_electrolyte(self, cooldown, count_goals)
+local function shoot_electrolyte(self, cooldown)
 	timer.delay(cooldown, false, function()
 		msg.post("/hero/bullet_go#bullet", "electrolyte")
 	end)
@@ -31,14 +30,18 @@ function on_message(self, message_id, message, sender)
 		if (self.lvl == 1) then
 			self.cooldown = 5
 			self.count_goals = 1
+			self.damage = go.get("/hero/bullet_go#bullet", "damage") / 2
 		--shoot to two enemy
 		elseif (self.lvl == 2) then
+			self.count_goals = 2
 		--dmg electrolyte = dmg bullet
 		elseif (self.lvl == 3) then
+			self.damage = go.get("/hero/bullet_go#bullet", "damage")
 		--shoot to three enemy	
 		elseif (self.lvl == 4) then
-		--tut pizdec
-		elseif (self.lvl == 5) then
+			self.count_goals = 3
+			
+		--WHEN 5 LVL --- speed shooting enemies = 85% and stun 1 enemy on 1.5 sec
 		end
 
 		shoot_electrolyte(self, self.cooldown, self.count_goals)
@@ -70,15 +73,32 @@ function on_message(self, message_id, message, sender)
 
 	--if enemy in collision
 	if message_id == CHECK_AROUND then
+		local count_shooting_enemies = 1	
+		
 		for index,enemy in pairs(enemies_in_zone_electro) do
-			--not attached enemy
+			--not attached self enemy
 			if enemy ~= message.id then
-				local electrolyte_factory = "#electrolyte_factory"
-				local id_electrolyte = factory.create(electrolyte_factory, go.get_position(message.id))
+				--count shooting enemies = self.count_goals
+				if count_shooting_enemies <= self.count_goals then
+					local electrolyte_factory = "#electrolyte_factory"
+					local id_electrolyte = factory.create(electrolyte_factory, go.get_position(message.id))
 
-				electro_enemy[id_electrolyte] = enemy
-				
-				go.animate(id_electrolyte, "position", go.PLAYBACK_ONCE_FORWARD, go.get_position(enemy), go.EASING_LINEAR, 0.1, 0)
+					electro_enemy[id_electrolyte] = enemy
+
+					go.animate(id_electrolyte, "position", go.PLAYBACK_ONCE_FORWARD, go.get_position(enemy), go.EASING_LINEAR, 0.1, 0)
+
+					if self.lvl == 5 then
+						--stun 1 enemy
+						if count_shooting_enemies == 1 then
+							msg.post(enemy, "stun_electro")
+						--slow other enemies at 15%
+						else
+							msg.post(enemy, "slow_electro")
+						end
+					end
+
+					count_shooting_enemies = count_shooting_enemies + 1
+				end
 			end
 		end
 
@@ -88,13 +108,16 @@ function on_message(self, message_id, message, sender)
 	if message_id == CONTACT_POINT_RESPONSE then
 		--electrotyne contact with enemy
 		if message.other_group == ENEMY and electro_enemy[go.get_id()] == message.other_id then
-			go.delete()
+			--damage enemy
+			msg.post(message.other_id, "get_electro", { damage = self.damage })
 
 			electro_enemy[go.get_id()] = nil
+
+			go.delete()
 		end
 	end
 
-	if message_id == hash("create") then
+	if message_id == CREATE_ELECTRO then
 		local electro_factory = "#electrolyte_factory"
 		local id_electro = factory.create(electro_factory, go.get_position(message.id))
 

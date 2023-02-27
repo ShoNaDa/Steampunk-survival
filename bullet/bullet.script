@@ -22,7 +22,7 @@ local function fire(self, rotation, position, to, dmg)
 
 	if have_electo then
 		--CREATE ELECTRO
-		msg.post("/hero/electrolyte_go#electrolyte_bullet", "create", { id = id_bullet, to = to, dur = duration })
+		msg.post("/hero/electrolyte_go#electrolyte_bullet", "create_electro", { id = id_bullet, to = to, dur = duration })
 	end
 end
 
@@ -53,6 +53,8 @@ function on_message(self, message_id, message, sender)
 			
 			--need delete enemy from array
 			msg.post("/hero/electrolyte_go#electrolyte_bullet", "out", { id = message.other_id })
+
+			go.delete()
 		end
 	--for adding enemies to table
 	elseif message_id == TRIGGER_RESPONSE then

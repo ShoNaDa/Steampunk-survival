@@ -10,6 +10,9 @@ local ENEMY_KILLED = hash("enemy_killed")
 local CONTACT_POINT_RESPONSE = hash("contact_point_response")
 local ENEMY = hash("enemy")
 local HERO = hash("hero")
+local GET_ELECTRO = hash("get_electro")
+local STUN_ELECTRO = hash("stun_electro")
+local SLOW_ELECTRO = hash("slow_electro")
 
 local function take_damage(self, damage)
 	--subtract HP or deleted enemy
@@ -18,6 +21,10 @@ local function take_damage(self, damage)
 	else
 		msg.post("#", "enemy_killed")
 	end
+end
+
+function init(self)
+	self.speed = max_speed
 end
 
 function update(self, dt)
@@ -31,7 +38,7 @@ function update(self, dt)
 	go.set_rotation(self.rotation)
 
 	self.pos = go.get_position()
-	self.distance = max_speed * dt
+	self.distance = self.speed * dt
 	self.direction = vmath.rotate(self.rotation, vmath.vector3(0, self.distance, 0))
 	self.pos = self.pos + self.direction
 	go.set_position(self.pos)
@@ -48,6 +55,7 @@ function on_message(self, message_id, message, sender)
 			msg.post("/hero/hero", "get_damage", { damage = self.damage })
 		end
 	end
+	
 	if message_id == ENEMY_KILLED then
 		--send url to exp
 		msg.post("/experience#exp", "get_url", { point_exp = self.lvl_point })
@@ -55,10 +63,32 @@ function on_message(self, message_id, message, sender)
 		--remove enemy
 		go.delete()
 	end
-	if message_id == GET_DAMAGE then
-		--get damage
-		go.delete(sender)
 
+	--damage from bullet
+	if message_id == GET_DAMAGE then
 		take_damage(self, message.dmg)
+	end
+
+	--damage from eletrolyte
+	if message_id == GET_ELECTRO then
+		take_damage(self, message.damage)
+	end
+
+	--stun from electrolyte
+	if message_id == STUN_ELECTRO then
+		self.speed = 0
+
+		timer.delay(1.5, false, function() 
+			self.speed = max_speed
+		end)
+	end
+
+	--slow from electrolyte
+	if message_id == SLOW_ELECTRO then
+		self.speed = self.speed * 85 / 100
+		
+		timer.delay(2, false, function() 
+			self.speed = max_speed
+		end)
 	end
 end
