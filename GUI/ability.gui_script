@@ -1,0 +1,42 @@
+local  CHOOSE_ABILITY = hash("choose_ability")
+
+local enabled_abilities = {}
+
+function init(self)
+	msg.post(".", "acquire_input_focus")
+
+	self.shoot_back = gui.get_node("ability1_box")
+	self.shoot_offhand = gui.get_node("ability2_box")
+	self.electrotyne_bullet = gui.get_node("ability3_box")
+
+	self.all_enabled = false
+end
+
+function on_message(self, message_id, message, sender)
+	if message_id == CHOOSE_ABILITY then
+		msg.post("/GUI#pause", "paused")
+		gui.set_enabled(gui.get_node("all"), true)
+
+		timer.delay(0.5, false, function()
+			self.all_enabled = true
+		end)
+	end
+end
+
+function on_input(self, action_id, action)
+	if (self.all_enabled == true) then
+		--if select ability shoot_back
+		if action.pressed and (gui.pick_node(self.shoot_back, action.x, action.y)) then
+			msg.post("default:/shoot_back#shoot_back", "up_lvl")
+			self.all_enabled = false
+		--if select ability shoot_offhand
+		elseif action.pressed and (gui.pick_node(self.shoot_offhand, action.x, action.y)) then
+			msg.post("default:/shoot_offhand#shoot_offhand", "up_lvl")
+			self.all_enabled = false
+		--if select ability electrolyte_bullet
+		elseif action.pressed and (gui.pick_node(self.electrotyne_bullet, action.x, action.y)) then
+			msg.post("default:/hero/electrolyte_go#electrolyte_bullet", "up_lvl")
+			self.all_enabled = false
+		end
+	end
+end

@@ -64,14 +64,13 @@ function on_message(self, message_id, message, sender)
 			gui.set_text(gui.get_node("hp"), "Hp: " .. hp .. " => " .. hp_calc(self, hp))
 			gui.set_text(gui.get_node("speed"), "Speed: " .. speed .. " => " .. speed_calc(self, speed))
 			gui.set_text(gui.get_node("damage"), "Damage: " .. damage .. " => " .. damage_calc(self, damage))
-
-			timer.delay(1, false, function()
+			
+			timer.delay(0.5, false, function()
 				self.all_enabled = true
 			end)
-			--show ability message
+		--show ability message
 		else
-			--ЗДЕСЬ ДОЛЖЕН БЫТЬ ВЫБОР
-			--msg.post("/shoot_back#shoot_back", "chose_ability")
+			msg.post("/GUI#ability", "choose_ability")
 		end
 	end
 end

@@ -1,8 +1,9 @@
 go.property("cooldown", 0)
 go.property("damage", 0)
-go.property("lvl", 1)
+go.property("lvl", 0)
 
 local SHOOT_BACK = hash("shoot_back")
+local UP_LVL = hash("up_lvl")
 
 --for shoot back
 local function shoot_back(self, cooldown, damage)
@@ -40,5 +41,13 @@ function on_message(self, message_id, message, sender)
 		end
 		
 		shoot_back(self, self.cooldown, self.damage)
+	end
+
+	if message_id == UP_LVL then
+		self.lvl = self.lvl + 1
+
+		if self.lvl == 1 then
+			msg.post(".", "shoot_back")
+		end
 	end
 end
