@@ -1,0 +1,37 @@
+local ABILITY_SELECTED = hash("ability_selected")
+
+local shoosed_abilities = {}
+local all_nodes = {}
+
+function init(self)
+	msg.post(".", "acquire_input_focus")
+
+	all_nodes[1] = "sb_icon"
+	all_nodes[2] = "se_icon"
+	all_nodes[3] = "so_icon"
+end
+
+function on_message(self, message_id, message, sender)
+	--add ability if this not exist
+	if message_id == ABILITY_SELECTED then
+		local may_add = true
+
+		--check exist ability
+		for index, ability in pairs(shoosed_abilities) do
+			if ability == message.selected_ability then
+				may_add = false
+				break
+			end
+		end
+
+		if may_add then
+			--enable ability texture
+			local node_for_enable = all_nodes[table.getn(shoosed_abilities) + 1]
+			gui.play_flipbook(gui.get_node(node_for_enable), message.selected_ability)
+			gui.set_enabled(gui.get_node(node_for_enable), true)
+
+			--add to 'count + 1' ability
+			shoosed_abilities[table.getn(shoosed_abilities) + 1] = message.selected_ability
+		end
+	end		
+end
