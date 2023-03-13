@@ -1,10 +1,10 @@
 go.property("hp", 100)
+go.property("max_HP", 100)
 go.property("lvl", 1)
 go.property("speed", 0)
 go.property("damage", 0)
 go.property("fire_speed", 1)
 
-local max_HP = 100
 local max_speed = 100
 local lvl_progress = 1
 local max_lvl_progress = 100
@@ -38,7 +38,9 @@ local function take_damage(self, damage)
 		self.hp = self.hp - damage
 	elseif self.hp - damage <= 0 then
 		self.hp = 0
+		
 		msg.post("main:/GUI#game_over", "hero_died")
+		msg.post("/statistics#statistics", "get_info_from_hero")
 	end
 
 	--send new life to GUI
@@ -138,7 +140,7 @@ function on_message(self, message_id, message, sender)
 			
 			msg.post("main:/GUI#lvl", "lvl_up", { lvl = self.lvl })
 
-			local charact = { lvl = self.lvl, hp = max_HP, speed = max_speed, damage = self.damage }
+			local charact = { lvl = self.lvl, hp = self.max_HP, speed = max_speed, damage = self.damage }
 			msg.post("main:/GUI#talent", "lvl_up", { characts = charact })
 		end
 		
@@ -153,11 +155,11 @@ function on_message(self, message_id, message, sender)
 		self.damage = message.new_characts.new_damage
 
 		--set new max
-		max_HP = self.hp
+		self.max_HP = self.hp
 		max_speed = self.speed
 
 		--for GUI
-		msg.post("main:/GUI#helth", "life_max_update", { max_life = max_HP, life = self.hp })
+		msg.post("main:/GUI#helth", "life_max_update", { max_life = self.max_HP, life = self.hp })
 
 		--for bullet
 		go.set("/hero/bullet_go#bullet", "damage", self.damage)
@@ -173,7 +175,7 @@ function on_message(self, message_id, message, sender)
 
 	--if hero was rebel
 	if message_id == REBEL then
-		self.hp = max_HP
-		msg.post("main:/GUI#helth", "life_max_update", { max_life = max_HP, life = self.hp })
+		self.hp = self.max_HP
+		msg.post("main:/GUI#helth", "life_max_update", { max_life = self.max_HP, life = self.hp })
 	end
 end

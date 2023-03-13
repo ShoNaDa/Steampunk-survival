@@ -42,6 +42,9 @@ local function set_characts_hero(self, _hp, _speed, _damage, _pick_node)
 		gui.set_enabled(gui.get_node("all"), false)
 		msg.post("/GUI#pause", "unpaused")
 
+		msg.post("/GUI#pause", "unhide")
+		msg.post("/GUI#active_abilities", "unhide")
+
 		--old color
 		gui.set_color(_pick_node, old_color)
 	end)
@@ -53,6 +56,9 @@ function on_message(self, message_id, message, sender)
 		if message.characts.lvl % lvl_ability ~= 0 then
 			msg.post("/GUI#pause", "paused")
 			gui.set_enabled(gui.get_node("all"), true)
+
+			msg.post("/GUI#pause", "hide")
+			msg.post("/GUI#active_abilities", "hide")
 
 			--set all characts
 			hp = message.characts.hp

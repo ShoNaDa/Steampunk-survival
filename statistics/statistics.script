@@ -1,0 +1,43 @@
+go.property("health", 0)
+go.property("damage", 0)
+go.property("speed", 0)
+go.property("enemies_killed", 0) --get from enemy script
+go.property("level", 0)
+go.property("locations_passed", 0)
+go.property("life_time", hash(""))
+
+local GET_INFO_FROM_HERO = hash("get_info_from_hero")
+
+local seconds_life_time = 0
+
+--calculate life time in seconds
+local function start_timer(self)
+	timer.delay(1, true, function()
+		seconds_life_time = seconds_life_time + 1
+	end)
+end
+
+function init(self)
+	start_timer(self)
+end
+
+--format hours:minutes:seconds in Int32
+local function calculate_life_time(self)
+	self.life_time = hash(math.modf(seconds_life_time / 3600) .. ":" .. math.modf(seconds_life_time / 60) .. ":" .. seconds_life_time)
+end
+
+function on_message(self, message_id, message)
+	--get from hero info
+	if message_id == GET_INFO_FROM_HERO then
+		self.health = go.get("/hero/hero#hero_script", "max_HP")
+		self.damage = go.get("/hero/hero#hero_script", "damage")
+		self.speed = go.get("/hero/hero#hero_script", "speed")
+		self.level = go.get("/hero/hero#hero_script", "lvl")
+
+		calculate_life_time(self)
+
+		msg.post("main:/GUI#game_over", "statistics", 
+		{ hp = self.health, damage = self.damage, speed = self.speed, enemies_killed = self.enemies_killed, 
+		lvl = self.level, locations_passed = self.locations_passed, time = self.life_time })
+	end
+end

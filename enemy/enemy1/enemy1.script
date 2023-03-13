@@ -59,6 +59,9 @@ function on_message(self, message_id, message, sender)
 	if message_id == ENEMY_KILLED then
 		--send url to exp
 		msg.post("/experience#exp", "get_url", { point_exp = self.lvl_point })
+
+		--for statistic
+		go.set("/statistics#statistics", "enemies_killed", go.get("/statistics#statistics", "enemies_killed") + 1)
 		
 		--remove enemy
 		go.delete()

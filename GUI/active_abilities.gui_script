@@ -1,4 +1,6 @@
 local ABILITY_SELECTED = hash("ability_selected")
+local HIDE = hash("hide")
+local UNHIDE = hash("unhide")
 
 local shoosed_abilities = {}
 local all_nodes = {}
@@ -33,5 +35,11 @@ function on_message(self, message_id, message, sender)
 			--add to 'count + 1' ability
 			shoosed_abilities[table.getn(shoosed_abilities) + 1] = message.selected_ability
 		end
-	end		
+	end
+
+	if message_id == HIDE then
+		gui.set_enabled(gui.get_node("line"), false)
+	elseif message_id == UNHIDE then
+		gui.set_enabled(gui.get_node("line"), true)
+	end
 end

@@ -2,6 +2,7 @@ local HERO_DIED = hash("hero_died")
 local RESET = hash("reset")
 local PROXY_UNLOADED = hash('proxy_unloaded')
 local PROXY_LOADED = hash('proxy_loaded')
+local STATISTICS = hash("statistics")
 
 local nodes = {}
 
@@ -15,6 +16,13 @@ function init(self)
 					continue_node = gui.get_node("continue_box"),
 					game_over_node = gui.get_node("game_over"),
 					end_box_node = gui.get_node("end_box"),
+					helth_text = gui.get_node("health"),
+					damage_text = gui.get_node("damage"),
+					speed_text = gui.get_node("speed"),
+					enemies_killed_text = gui.get_node("enemies_killed"),
+					level_text = gui.get_node("level"),
+					locations_passed_text = gui.get_node("locations_passed"),
+					life_time_text = gui.get_node("life_time"),
 					all_nodes = gui.get_node("all") }
 
 	self.may_continue = true
@@ -32,12 +40,18 @@ local function change_color(self, _pick_node)
 	end)
 end
 
+local function set_hide(url, status)
+	msg.post(url, status)
+end
+
 function on_message(self, message_id, message, sender)
 	if message_id == HERO_DIED then
 		msg.post("/GUI#pause", "paused")
 
 		gui.set_enabled(nodes.all_nodes, true)
-		msg.post("/GUI#pause", "hide")
+
+		set_hide("/GUI#pause", "hide")
+		set_hide("/GUI#active_abilities", "hide")
 		
 		if self.may_continue then
 			self.may_continue = false
@@ -61,6 +75,17 @@ function on_message(self, message_id, message, sender)
 
 		msg.post("default:/proxy#proxy_script", "reset")
 	end
+
+	if message_id == STATISTICS then
+		gui.set_text(nodes.helth_text, "health - " .. message.hp)
+		gui.set_text(nodes.damage_text, "damage - " .. message.damage)
+		gui.set_text(nodes.speed_text, "speed - " .. message.speed)
+		gui.set_text(nodes.enemies_killed_text, "enemies killed - " .. message.enemies_killed)
+		gui.set_text(nodes.level_text, "level - " .. message.lvl)
+		gui.set_text(nodes.locations_passed_text, "locations passed - " .. message.locations_passed)
+		local string_for_sub = "" .. message.time
+		gui.set_text(nodes.life_time_text, "life time - " .. string.sub(string_for_sub, 2, -2)) --string.sub for substring '[' and ']'
+	end
 end
 
 function on_input(self, action_id, action)
@@ -74,6 +99,8 @@ function on_input(self, action_id, action)
 			timer.delay(1, false,  function()
 				gui.set_enabled(nodes.all_nodes, false)
 				msg.post("/GUI#pause", "unpaused")
+				set_hide("/GUI#pause", "unhide")
+				set_hide("/GUI#active_abilities", "unhide")
 			end)
 		--not check ad
 		elseif action.pressed and gui.pick_node(nodes.cancel_node, action.x, action.y) then
@@ -93,8 +120,7 @@ function on_input(self, action_id, action)
 				sys.reboot()
 			end)
 		end
-
-		msg.post("/GUI#pause", "unhide")
+		
 		self.enabled = false
 	end
 end
