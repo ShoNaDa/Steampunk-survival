@@ -1,0 +1,46 @@
+local VERTICAL_POINTS = 938
+local HORIZONTAL_POINTS = 1186
+local CREATE_NEXT_GWR = hash("create_next_GWR")
+local DEFAULT_GWR = vmath.vector3(1500, 500, 0)
+
+local main_ground_with_rocks = vmath.vector3(1500, 500, 0)
+local count_creating_GWR_vertical = 0
+local count_creating_GWR_horizontal = 0
+local cube = 3
+local scale_GWR = 0.2
+-- * 0.2 : its a scale from GWR
+
+function init(self)
+	--GWR - ground_with_rocks
+	msg.post(".", "create_next_GWR")
+end
+
+function on_message(self, message_id, message, sender)
+	if message_id == CREATE_NEXT_GWR then
+		--create 5 x 5
+		if count_creating_GWR_vertical < cube and count_creating_GWR_horizontal < cube then
+			--(X. Y + 469, Z)
+			main_ground_with_rocks.y = main_ground_with_rocks.y + VERTICAL_POINTS
+			
+			local place = vmath.vector3(main_ground_with_rocks.x * scale_GWR, main_ground_with_rocks.y * scale_GWR, main_ground_with_rocks.z)
+			factory.create("/generate_GWR#gereratoe_ground_with_rocks", place, nil)
+
+			--go up
+			count_creating_GWR_vertical = count_creating_GWR_vertical + 1
+
+			msg.post(".", "create_next_GWR")
+		--if create 5 vertical block go next horizontal place
+		elseif count_creating_GWR_vertical == cube then
+			--(X + 593. Y, Z)
+			main_ground_with_rocks.x = main_ground_with_rocks.x + HORIZONTAL_POINTS
+			--go Y back
+			main_ground_with_rocks.y = DEFAULT_GWR.y
+			count_creating_GWR_vertical = 0
+
+			--go right
+			count_creating_GWR_horizontal = count_creating_GWR_horizontal + 1
+
+			msg.post(".", "create_next_GWR")
+		end
+	end
+end

@@ -39,7 +39,9 @@ function on_message(self, message_id, message, sender)
 
 	if message_id == HIDE then
 		gui.set_enabled(gui.get_node("line"), false)
+		gui.set_enabled(gui.get_node("all"), false)
 	elseif message_id == UNHIDE then
 		gui.set_enabled(gui.get_node("line"), true)
+		gui.set_enabled(gui.get_node("all"), true)
 	end
 end
