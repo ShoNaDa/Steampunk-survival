@@ -1,0 +1,10 @@
+image: "/resources/ground/ground with rocks.png"
+tile_width: 225
+tile_height: 125
+tile_margin: 0
+tile_spacing: 0
+collision: ""
+material_tag: "tile"
+extrude_borders: 0
+inner_padding: 0
+sprite_trim_mode: SPRITE_TRIM_MODE_OFF

@@ -7,7 +7,6 @@ local UP_LVL = hash("up_lvl")
 
 --for shoot back
 local function shoot_back(self, cooldown, damage)
-	
 	timer.delay(cooldown, false, function()
 		local rotation = go.get_rotation("/hero/hero")
 		rotation = vmath.quat(rotation.x, rotation.y, rotation.w * -1, rotation.z)

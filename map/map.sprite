@@ -1,4 +1,0 @@
-tile_set: "/resources/images.atlas"
-default_animation: "Tayl_-_ground_with_rocks"
-material: "/builtins/materials/sprite.material"
-blend_mode: BLEND_MODE_ALPHA

@@ -2,6 +2,10 @@ key_trigger {
   input: KEY_ESC
   action: "pause"
 }
+key_trigger {
+  input: KEY_SPACE
+  action: "smoke"
+}
 mouse_trigger {
   input: MOUSE_BUTTON_1
   action: "touch_mouse"

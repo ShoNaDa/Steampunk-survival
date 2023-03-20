@@ -1,0 +1,4 @@
+tile_set: "/ability/smoke_bomb/smoke.tilesource"
+default_animation: "start"
+material: "/builtins/materials/sprite.material"
+blend_mode: BLEND_MODE_SCREEN

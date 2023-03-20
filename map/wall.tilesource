@@ -63,7 +63,7 @@ convex_hulls {
 convex_hulls {
   index: 99
   count: 9
-  collision_group: "wall"
+  collision_group: ""
 }
 collision_groups: "wall"
 extrude_borders: 2

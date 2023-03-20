@@ -235,6 +235,7 @@ embedded_instances {
   id: "abilities"
   children: "shoot_back"
   children: "shoot_offhand"
+  children: "smoke_bomb"
   data: ""
   position {
     x: 0.0
@@ -365,10 +366,64 @@ embedded_instances {
   }
 }
 embedded_instances {
-  id: "generate_GWR"
+  id: "map"
   data: "components {\n"
-  "  id: \"generate map\"\n"
-  "  component: \"/map/generate map.script\"\n"
+  "  id: \"ground_with_rocks\"\n"
+  "  component: \"/map/ground_with_rocks.tilemap\"\n"
+  "  position {\n"
+  "    x: 0.0\n"
+  "    y: 0.0\n"
+  "    z: 0.0\n"
+  "  }\n"
+  "  rotation {\n"
+  "    x: 0.0\n"
+  "    y: 0.0\n"
+  "    z: 0.0\n"
+  "    w: 1.0\n"
+  "  }\n"
+  "  property_decls {\n"
+  "  }\n"
+  "}\n"
+  "components {\n"
+  "  id: \"grass_ground_land\"\n"
+  "  component: \"/map/grass_ground_land.tilemap\"\n"
+  "  position {\n"
+  "    x: 0.0\n"
+  "    y: 0.0\n"
+  "    z: 0.0\n"
+  "  }\n"
+  "  rotation {\n"
+  "    x: 0.0\n"
+  "    y: 0.0\n"
+  "    z: 0.0\n"
+  "    w: 1.0\n"
+  "  }\n"
+  "  property_decls {\n"
+  "  }\n"
+  "}\n"
+  ""
+  position {
+    x: 0.0
+    y: 0.0
+    z: -1.0
+  }
+  rotation {
+    x: 0.0
+    y: 0.0
+    z: 0.0
+    w: 1.0
+  }
+  scale3 {
+    x: 1.0
+    y: 1.0
+    z: 1.0
+  }
+}
+embedded_instances {
+  id: "smoke_bomb"
+  data: "components {\n"
+  "  id: \"smoke_bomb\"\n"
+  "  component: \"/ability/smoke_bomb/smoke_bomb.script\"\n"
   "  position {\n"
   "    x: 0.0\n"
   "    y: 0.0\n"
@@ -384,9 +439,9 @@ embedded_instances {
   "  }\n"
   "}\n"
   "embedded_components {\n"
-  "  id: \"gereratoe_ground_with_rocks\"\n"
+  "  id: \"smoke_bomb_factory\"\n"
   "  type: \"factory\"\n"
-  "  data: \"prototype: \\\"/map/ground_with_rocks.go\\\"\\n"
+  "  data: \"prototype: \\\"/ability/smoke_bomb/smoke_bomb.go\\\"\\n"
   "load_dynamically: false\\n"
   "\"\n"
   "  position {\n"

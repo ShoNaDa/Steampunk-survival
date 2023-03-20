@@ -1,8 +1,4 @@
 images {
-  image: "/resources/ground/dirt.png"
-  sprite_trim_mode: SPRITE_TRIM_MODE_OFF
-}
-images {
   image: "/resources/hero/hero.png"
   sprite_trim_mode: SPRITE_TRIM_MODE_OFF
 }
@@ -15,7 +11,7 @@ images {
   sprite_trim_mode: SPRITE_TRIM_MODE_OFF
 }
 images {
-  image: "/resources/bullet/electrolet.png"
+  image: "/resources/abilities/electrolet.png"
   sprite_trim_mode: SPRITE_TRIM_MODE_OFF
 }
 images {
@@ -27,11 +23,11 @@ images {
   sprite_trim_mode: SPRITE_TRIM_MODE_OFF
 }
 images {
-  image: "/resources/ground/Tayl_-_ground_with_rocks.jpg"
+  image: "/resources/ground/Tayl_-_land.png"
   sprite_trim_mode: SPRITE_TRIM_MODE_OFF
 }
 images {
-  image: "/resources/ground/Tayl_-_land.png"
+  image: "/resources/ground/Tayl_-_ground_with_rocks.jpg"
   sprite_trim_mode: SPRITE_TRIM_MODE_OFF
 }
 margin: 0

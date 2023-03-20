@@ -1,0 +1,86 @@
+go.property("cooldown", 0)
+go.property("lvl", 1)
+go.property("life_time", 0)
+go.property("plus_speed", false)
+go.property("smoke_damage", false)
+
+local SMOKE = hash("smoke")
+local TRIGGER_RESPONSE = hash("trigger_response")
+local HERO = hash("hero")
+
+local may_create = true
+
+--for smoke bomb
+local function smoke_bomb(self, cooldown, life_time)
+	local smoke_id = factory.create("/smoke_bomb#smoke_bomb_factory", go.get_position("/hero/hero"))
+	local smoke_sprite = msg.url(nil, smoke_id, "smoke_bomb_sprite")
+	
+	may_create = false
+
+	--animate start smoke bomb
+	timer.delay(0.2, false, function()
+		msg.post(smoke_sprite, "play_animation", {id = hash("finish")})
+	end)
+
+	--animate finish smoke bomb
+	timer.delay(life_time, false, function()
+		--sprite.play_flipbook(smoke_sprite, "finish")
+		msg.post(smoke_sprite, "play_animation", {id = hash("start")})
+
+		--delete smoke
+		timer.delay(0.2, false, function()
+			go.delete(smoke_id)
+			msg.post("/hero/hero", "dont_ignore_enemies")
+		end)
+	end)
+
+	--timer cooldown
+	timer.delay(cooldown, false, function()
+		may_create = true
+	end)
+end
+
+function init(self)
+	msg.post(".", "acquire_input_focus")
+end
+
+function on_input(self, action_id, action)
+	if action.released and action_id == SMOKE then
+		msg.post(".", "smoke")
+	end
+end
+
+function on_message(self, message_id, message, sender)
+	if message_id == SMOKE then
+		if may_create == true then
+			if (self.lvl == 1) then
+				self.life_time = 3
+				self.cooldown = 10
+			elseif (self.lvl == 2) then
+			elseif (self.lvl == 3) then
+			elseif (self.lvl == 4) then
+			elseif (self.lvl == 5) then
+			end
+
+			smoke_bomb(self, self.cooldown, self.life_time)
+		end
+	end
+
+	if message_id == TRIGGER_RESPONSE then
+		--if hero in smoke
+		if message.enter and message.other_group == HERO then
+			msg.post("/hero/hero", "ignore_enemies")
+		--if hero out smoke
+		else
+			msg.post("/hero/hero", "dont_ignore_enemies")
+		end
+	end
+	
+	if message_id == UP_LVL then
+		self.lvl = self.lvl + 1
+
+		if self.lvl == 1 then
+			msg.post(".", "smoke_bomb")
+		end
+	end
+end
