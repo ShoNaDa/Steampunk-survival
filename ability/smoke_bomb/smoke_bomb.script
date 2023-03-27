@@ -1,14 +1,24 @@
 go.property("cooldown", 0)
 go.property("lvl", 1)
 go.property("life_time", 0)
-go.property("plus_speed", false)
-go.property("smoke_damage", false)
+go.property("scale_smoke", vmath.vector3())
 
 local SMOKE = hash("smoke")
 local TRIGGER_RESPONSE = hash("trigger_response")
 local HERO = hash("hero")
+local ENEMY = hash("enemy")
 
 local may_create = true
+local hero_speed_up = false
+local hero_in_smoke = false
+local smoke_damage = false
+local enemies_in_smoke = {}
+
+--change speed hero
+local function change_speed_hero(self, speed)
+	local speed_hero = go.get("/hero/hero#hero_script", "max_speed")
+	go.set("/hero/hero#hero_script", "max_speed", speed_hero * speed)
+end
 
 --for smoke bomb
 local function smoke_bomb(self, cooldown, life_time)
@@ -26,11 +36,31 @@ local function smoke_bomb(self, cooldown, life_time)
 	timer.delay(life_time, false, function()
 		--sprite.play_flipbook(smoke_sprite, "finish")
 		msg.post(smoke_sprite, "play_animation", {id = hash("start")})
+		
+		--change all to start charact if hero in smoke, but smoke was deleted
+		if hero_in_smoke then
+			physics.set_maskbit("/hero/hero#collision_hero", "enemy", true)
+
+			if hero_speed_up then
+				change_speed_hero(self, 1 / 2)
+			end
+
+			hero_in_smoke = false
+		end
+
+		--change damage smoke for enemies in smoke
+		for enemy,_ in pairs(enemies_in_smoke) do
+			if enemies_in_smoke[enemy] == true then
+				print(enemy)
+				msg.post(enemy, "get_smoke", { get_smoke = false, damage = 10 })
+
+				enemies_in_smoke[enemy] = nil
+			end
+		end
 
 		--delete smoke
 		timer.delay(0.2, false, function()
 			go.delete(smoke_id)
-			msg.post("/hero/hero", "dont_ignore_enemies")
 		end)
 	end)
 
@@ -38,10 +68,14 @@ local function smoke_bomb(self, cooldown, life_time)
 	timer.delay(cooldown, false, function()
 		may_create = true
 	end)
+
+	self.lvl = self.lvl + 1
 end
 
 function init(self)
 	msg.post(".", "acquire_input_focus")
+
+	self.scale_smoke = go.get_scale()
 end
 
 function on_input(self, action_id, action)
@@ -53,13 +87,23 @@ end
 function on_message(self, message_id, message, sender)
 	if message_id == SMOKE then
 		if may_create == true then
+			--cd - 10 sec, lt - 3 sec
 			if (self.lvl == 1) then
 				self.life_time = 3
-				self.cooldown = 10
+				self.cooldown = 5
+			-- lt - 4 sec
 			elseif (self.lvl == 2) then
+				self.life_time = 4
+			-- scale * 2
 			elseif (self.lvl == 3) then
+				self.scale_smoke = self.scale_smoke * 2
+				go.set_scale(self.scale_smoke)
+			-- speed hero in smoke * 2
 			elseif (self.lvl == 4) then
+				hero_speed_up = true
+			--damage enemies in smoke
 			elseif (self.lvl == 5) then
+				smoke_damage = true
 			end
 
 			smoke_bomb(self, self.cooldown, self.life_time)
@@ -67,20 +111,41 @@ function on_message(self, message_id, message, sender)
 	end
 
 	if message_id == TRIGGER_RESPONSE then
-		--if hero in smoke
-		if message.enter and message.other_group == HERO then
-			msg.post("/hero/hero", "ignore_enemies")
-		--if hero out smoke
-		else
-			msg.post("/hero/hero", "dont_ignore_enemies")
-		end
-	end
-	
-	if message_id == UP_LVL then
-		self.lvl = self.lvl + 1
+		--enabled/disabled mask "enemy" from hero
+		if message.enter then
+			--if hero in smoke
+			if message.other_group == HERO then
+				hero_in_smoke = true
+				
+				physics.set_maskbit("/hero/hero#collision_hero", "enemy", false)
+				
+				if hero_speed_up then
+					change_speed_hero(self, 2)
+				end
+			end
 
-		if self.lvl == 1 then
-			msg.post(".", "smoke_bomb")
+			--if enemy in smoke and smoke 5 lvl damage him
+			if message.other_group == ENEMY and smoke_damage then
+				msg.post(message.other_id, "get_smoke", { get_smoke = true, damage = 10 })
+				enemies_in_smoke[message.other_id] = true
+			end
+		else
+			--if hero out smoke
+			if message.other_group == HERO then
+				hero_in_smoke = false
+
+				physics.set_maskbit("/hero/hero#collision_hero", "enemy", true)
+
+				if hero_speed_up then
+					change_speed_hero(self, 1 / 2)
+				end
+			end
+
+			--if enemy out smoke and smoke 5 lvl damage him
+			if message.other_group == ENEMY and smoke_damage then
+				msg.post(message.other_id, "get_smoke", { get_smoke = false, damage = 10 })
+				enemies_in_smoke[message.other_id] = nil
+			end
 		end
 	end
 end

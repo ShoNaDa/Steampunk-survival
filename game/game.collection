@@ -194,7 +194,7 @@ embedded_instances {
   "mass: 0.0\\n"
   "friction: 0.1\\n"
   "restitution: 0.5\\n"
-  "group: \\\"\\\"\\n"
+  "group: \\\"wall\\\"\\n"
   "mask: \\\"hero\\\"\\n"
   "linear_damping: 0.0\\n"
   "angular_damping: 0.0\\n"

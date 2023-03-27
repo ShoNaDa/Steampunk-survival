@@ -2,29 +2,34 @@ local RESPONSE = hash("response")
 
 local FACTORY_POSITIONS = { vmath.vector3(175,1000,0), vmath.vector3(875,1000,0), vmath.vector3(175,100,0), vmath.vector3(875,100,0) }
 
-local function sender_msg()
-	msg.post("#", "response")
-end
-
-function init(self)
-	math.randomseed(socket.gettime() * 10000)
-	
-	sender_msg()
-end
+math.randomseed(os.time())
 
 local function rand_factory(self, id_factory)
 	return FACTORY_POSITIONS[id_factory]
 end
 
+function init(self)
+	local enemy_speed = go.get("/enemy1#enemy1", "speed")
+	local enemy_HP = go.get("/enemy1#enemy1", "HP")
+	local enemy_damage = go.get("/enemy1#enemy1", "damage")
+	
+	timer.delay(0, false, function() 
+		msg.post("#", "response") 
+	end)
+end
+
 function on_message(self, message_id, message, sender)
 	if message_id == RESPONSE then
 		--spawn enemy in rand place
-		local id = factory.create("#enemy1_factory", rand_factory(self, math.random(1, 4)), nil, 
-			{ speed = go.get("/enemy1#enemy1", "speed") ,HP = go.get("/enemy1#enemy1", "HP") ,damage = go.get("/enemy1#enemy1", "damage") })
+		local rand_pos = rand_factory(self, math.random(1, 4))
+		local id_enemy = factory.create("#enemy1_factory", rand_pos, nil, { speed = enemy_speed, HP =  enemy_HP, damage = enemy_damage })
+		
 		--set new pos
-		go.set_position(rand_factory(self, math.random(1, 4)))
+		go.set_position(rand_pos)
 
 		--wait 2s then call send_second()
-		timer.delay(2, false, sender_msg)
+		timer.delay(2, false, function() 
+			msg.post("#", "response") 
+		end)
 	end
 end

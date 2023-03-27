@@ -2,15 +2,14 @@ go.property("hp", 100)
 go.property("max_HP", 100)
 go.property("lvl", 1)
 go.property("speed", 0)
+go.property("max_speed", 100)
 go.property("damage", 0)
 go.property("fire_speed", 1)
 
-local max_speed = 100
 local lvl_progress = 1
 local max_lvl_progress = 100
 local rotation_hero = vmath.quat()
 local game_paused = false
-local ignore_collision_enemy = false
 
 local GET_NEW_CHARACT = hash("get_new_charact")
 local LVL_UPDATE = hash("lvl_update")
@@ -22,8 +21,6 @@ local ENEMY = hash("enemy")
 local EXP = hash("exp")
 local SLIDER = hash("slider")
 local REBEL = hash("rebel")
-local IGNORE_ENEMIES = hash("ignore_enemies")
-local DONT_IGNORE_ENEMIES = hash("dont_ignore_enemies")
 
 function init(self)
 	msg.post(".", "acquire_input_focus")
@@ -89,7 +86,7 @@ function on_input(self, action_id, action)
 	if not action.touch then
 		if action_id == TOUCH then
 			self.move = action.released and 0 or 1
-			self.speed = max_speed
+			self.speed = self.max_speed
 		end
 
 		if not action_id then
@@ -101,7 +98,7 @@ end
 function on_message(self, message_id, message, sender)
 	if message_id == CONTACT_POINT_RESPONSE and message.other_group ~= EXP then
 		--pushback
-		if message.other_group == ENEMY and not ignore_collision_enemy then
+		if message.other_group == ENEMY then
 			local push_to = go.get_position() + message.normal * 30
 			-- knockback animation, then continue moving
 			go.animate(".", "position", go.PLAYBACK_ONCE_FORWARD, push_to, go.EASING_OUTQUAD, 0.3, 0)
@@ -143,7 +140,7 @@ function on_message(self, message_id, message, sender)
 			
 			msg.post("main:/GUI#lvl", "lvl_up", { lvl = self.lvl })
 
-			local charact = { lvl = self.lvl, hp = self.max_HP, speed = max_speed, damage = self.damage }
+			local charact = { lvl = self.lvl, hp = self.max_HP, speed = self.max_speed, damage = self.damage }
 			msg.post("main:/GUI#talent", "lvl_up", { characts = charact })
 		end
 		
@@ -159,7 +156,7 @@ function on_message(self, message_id, message, sender)
 
 		--set new max
 		self.max_HP = self.hp
-		max_speed = self.speed
+		self.max_speed = self.speed
 
 		--for GUI
 		msg.post("main:/GUI#helth", "life_max_update", { max_life = self.max_HP, life = self.hp })
@@ -180,13 +177,5 @@ function on_message(self, message_id, message, sender)
 	if message_id == REBEL then
 		self.hp = self.max_HP
 		msg.post("main:/GUI#helth", "life_max_update", { max_life = self.max_HP, life = self.hp })
-	end
-
-	if message_id == IGNORE_ENEMIES then
-		ignore_collision_enemy = true
-		msg.post("/enemy1#enemy1", "ignore_hero")
-	elseif message_id == DONT_IGNORE_ENEMIES then
-		ignore_collision_enemy = false
-		msg.post("/enemy1#enemy1", "dont_ignore_hero")
 	end
 end

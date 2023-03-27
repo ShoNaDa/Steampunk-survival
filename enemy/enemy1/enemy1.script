@@ -4,7 +4,6 @@ go.property("lvl_point", 25)
 go.property("speed", 30)
 
 local max_speed = 30
-local ignore_collision_hero = true
 
 local GET_DAMAGE = hash("get_damage")
 local ENEMY_KILLED = hash("enemy_killed")
@@ -14,8 +13,7 @@ local HERO = hash("hero")
 local GET_ELECTRO = hash("get_electro")
 local STUN_ELECTRO = hash("stun_electro")
 local SLOW_ELECTRO = hash("slow_electro")
-local IGNORE_HERO = hash("ignore_hero")
-local DONT_IGNORE_HERO = hash("dont_ignore_hero")
+local GET_SMOKE = hash("get_smoke")
 
 local function take_damage(self, damage)
 	--subtract HP or deleted enemy
@@ -54,7 +52,7 @@ function on_message(self, message_id, message, sender)
 			local new_pos = go.get_position() + message.normal * message.distance
 			go.set_position(new_pos)
 		--enemy contact with hero
-		elseif message.other_group == HERO and not ignore_collision_hero then
+		elseif message.other_group == HERO then
 			msg.post("/hero/hero", "get_damage", { damage = self.damage })
 		end
 	end
@@ -98,9 +96,14 @@ function on_message(self, message_id, message, sender)
 		end)
 	end
 
-	if message_id == IGNORE_HERO then
-		ignore_collision_hero = true
-	elseif message_id == DONT_IGNORE_HERO then
-		ignore_collision_hero = false
+	--damage from smoke
+	if message_id == GET_SMOKE then
+		if message.get_smoke then
+			self.handle = timer.delay(1, true, function() 
+				take_damage(self, message.damage)
+			end)
+		else
+			timer.cancel(self.handle)
+		end
 	end
 end

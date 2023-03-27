@@ -1629,4 +1629,4 @@ layers {
   }
 }
 material: "/builtins/materials/tile_map.material"
-blend_mode: BLEND_MODE_ALPHA
+blend_mode: BLEND_MODE_SCREEN
