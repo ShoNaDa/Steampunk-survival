@@ -2,7 +2,7 @@ local ABILITY_SELECTED = hash("ability_selected")
 local HIDE = hash("hide")
 local UNHIDE = hash("unhide")
 
-local shoosed_abilities = {}
+local сhoosed_abilities = {}
 local all_nodes = {}
 
 function init(self)
@@ -11,6 +11,7 @@ function init(self)
 	all_nodes[1] = "sb_icon"
 	all_nodes[2] = "se_icon"
 	all_nodes[3] = "so_icon"
+	all_nodes[4] = "a_sb_icon"
 end
 
 function on_message(self, message_id, message, sender)
@@ -19,7 +20,7 @@ function on_message(self, message_id, message, sender)
 		local may_add = true
 
 		--check exist ability
-		for index, ability in pairs(shoosed_abilities) do
+		for index, ability in pairs(сhoosed_abilities) do
 			if ability == message.selected_ability then
 				may_add = false
 				break
@@ -28,12 +29,12 @@ function on_message(self, message_id, message, sender)
 
 		if may_add then
 			--enable ability texture
-			local node_for_enable = all_nodes[table.getn(shoosed_abilities) + 1]
+			local node_for_enable = all_nodes[table.getn(сhoosed_abilities) + 1]
 			gui.play_flipbook(gui.get_node(node_for_enable), message.selected_ability)
 			gui.set_enabled(gui.get_node(node_for_enable), true)
 
 			--add to 'count + 1' ability
-			shoosed_abilities[table.getn(shoosed_abilities) + 1] = message.selected_ability
+			сhoosed_abilities[table.getn(сhoosed_abilities) + 1] = message.selected_ability
 		end
 	end
 

@@ -1,9 +1,10 @@
 go.property("cooldown", 0)
-go.property("lvl", 1)
+go.property("lvl", 0)
 go.property("life_time", 0)
 go.property("scale_smoke", vmath.vector3())
 
 local SMOKE = hash("smoke")
+local UP_LVL = hash("up_lvl")
 local TRIGGER_RESPONSE = hash("trigger_response")
 local HERO = hash("hero")
 local ENEMY = hash("enemy")
@@ -68,20 +69,12 @@ local function smoke_bomb(self, cooldown, life_time)
 	timer.delay(cooldown, false, function()
 		may_create = true
 	end)
-
-	self.lvl = self.lvl + 1
 end
 
 function init(self)
 	msg.post(".", "acquire_input_focus")
 
 	self.scale_smoke = go.get_scale()
-end
-
-function on_input(self, action_id, action)
-	if action.released and action_id == SMOKE then
-		msg.post(".", "smoke")
-	end
 end
 
 function on_message(self, message_id, message, sender)
@@ -107,6 +100,14 @@ function on_message(self, message_id, message, sender)
 			end
 
 			smoke_bomb(self, self.cooldown, self.life_time)
+		end
+
+		if message_id == UP_LVL then
+			self.lvl = self.lvl + 1
+
+			if self.lvl == 1 then
+				msg.post(".", "smoke")
+			end
 		end
 	end
 
