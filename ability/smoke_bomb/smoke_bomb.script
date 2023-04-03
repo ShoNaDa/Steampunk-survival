@@ -52,7 +52,6 @@ local function smoke_bomb(self, cooldown, life_time)
 		--change damage smoke for enemies in smoke
 		for enemy,_ in pairs(enemies_in_smoke) do
 			if enemies_in_smoke[enemy] == true then
-				print(enemy)
 				msg.post(enemy, "get_smoke", { get_smoke = false, damage = 10 })
 
 				enemies_in_smoke[enemy] = nil
@@ -101,14 +100,10 @@ function on_message(self, message_id, message, sender)
 
 			smoke_bomb(self, self.cooldown, self.life_time)
 		end
+	end
 
-		if message_id == UP_LVL then
-			self.lvl = self.lvl + 1
-
-			if self.lvl == 1 then
-				msg.post(".", "smoke")
-			end
-		end
+	if message_id == UP_LVL then
+		self.lvl = self.lvl + 1
 	end
 
 	if message_id == TRIGGER_RESPONSE then
