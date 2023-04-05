@@ -1,0 +1,156 @@
+local RELOAD_GAME = hash("reload_game")
+local FINAL_GAME = hash("final_game")
+
+local main_proxy = "/proxy#collectionproxy"
+local game_proxy = "main:/proxy#game_proxy"
+local all_nodes = {}
+local all_nodes_stat = {}
+local is_menu = true
+local menu_enabled = true
+
+local function start()
+	--start game
+	msg.post(main_proxy, "acquire_input_focus")
+	msg.post(main_proxy, "load")
+	msg.post(main_proxy, "init")
+	msg.post(main_proxy, "enable")
+end
+
+local function final()
+	--final game
+	msg.post(main_proxy, "disable")
+	msg.post(main_proxy, "final")
+	msg.post(main_proxy, "unload")
+
+	msg.post(game_proxy, "disable")
+	msg.post(game_proxy, "final")
+	msg.post(game_proxy, "unload")
+end
+
+local function set_color(self, pick_node)
+	--new color on picked node
+	local old_color = gui.get_color(pick_node)
+	gui.set_color(pick_node, vmath.vector4(0.5, 0.5, 0.5, 1))
+	
+	timer.delay(1, false,  function()
+		--disable all
+		for _,node in ipairs(all_nodes) do
+			gui.set_enabled(node, false)
+		end
+		
+		--old color
+		gui.set_color(pick_node, old_color)
+	end)
+end
+
+local function back(table_disable, table_enable)
+	for _,node in ipairs(table_disable) do
+		gui.set_enabled(node, false)
+	end
+
+	for _,node in ipairs(table_enable) do
+		gui.set_enabled(node, true)
+	end
+end
+
+function init(self)
+	msg.post(".", "acquire_input_focus")
+	
+	--menu
+	table.insert(all_nodes, gui.get_node("start"))
+	table.insert(all_nodes, gui.get_node("statistic"))
+	table.insert(all_nodes, gui.get_node("heroes"))
+	table.insert(all_nodes, gui.get_node("settings"))
+	table.insert(all_nodes, gui.get_node("exit"))
+	table.insert(all_nodes, gui.get_node("back"))
+	table.insert(all_nodes, gui.get_node("title"))
+
+	--stat
+	table.insert(all_nodes_stat, gui.get_node("stats/title"))
+	table.insert(all_nodes_stat, gui.get_node("stats/statistic_back"))
+	table.insert(all_nodes_stat, gui.get_node("stats/back"))
+	table.insert(all_nodes_stat, gui.get_node("back"))
+end
+
+function on_message(self, message_id, message, sender)
+	--for restart
+	if message_id == RELOAD_GAME then
+		final()
+
+		timer.delay(1, false,  function()
+			start()
+		end)
+	end
+
+	--for game over
+	if message_id == FINAL_GAME then
+		final()
+
+		timer.delay(1, false,  function()
+			--enable all
+			for _,node in ipairs(all_nodes) do
+				gui.set_enabled(node, true)
+			end
+		end)
+	end
+end
+
+function on_input(self, action_id, action)
+	if action.released then
+		if menu_enabled then
+			--click start
+			if gui.pick_node(all_nodes[1], action.x, action.y) then
+				menu_enabled = false
+				set_color(self, all_nodes[1])
+
+				timer.delay(1, false,  start)
+			end
+
+			--click statistic
+			if gui.pick_node(all_nodes[2], action.x, action.y) then
+				menu_enabled = false
+				set_color(self, all_nodes[2])
+
+				timer.delay(1, false,  function()
+					--enable all stat
+					for _,node in ipairs(all_nodes_stat) do
+						gui.set_enabled(node, true)
+					end
+				end)
+			end
+
+			--click heroes
+			if gui.pick_node(all_nodes[3], action.x, action.y) then
+				menu_enabled = false
+				set_color(self, all_nodes[3])
+			end
+
+			--click settings
+			if gui.pick_node(all_nodes[4], action.x, action.y) then
+				menu_enabled = false
+				set_color(self, all_nodes[4])
+			end
+			
+			--click exit
+			if gui.pick_node(all_nodes[5], action.x, action.y) then
+				menu_enabled = false
+				set_color(self, all_nodes[5])
+
+				timer.delay(1, false,  function()
+					sys.exit(0)
+				end)
+			end
+		else
+			--click back stat
+			if gui.pick_node(all_nodes_stat[3], action.x, action.y) then
+				set_color(self, all_nodes_stat[3])
+
+				timer.delay(1, false,  function()
+					back(all_nodes_stat, all_nodes)
+
+					menu_enabled = true
+				end)
+			end
+		end
+	end
+end
