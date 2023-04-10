@@ -1,12 +1,28 @@
 local RELOAD_GAME = hash("reload_game")
 local FINAL_GAME = hash("final_game")
+local UPDATE_STAT = hash("update_stat")
+local STAT_FIRST = { enemies_killed = 0, locations_passed = 0, sec = 0, min = 0, hour = 0 }
 
 local main_proxy = "/proxy#collectionproxy"
 local game_proxy = "main:/proxy#game_proxy"
+local window_enabled = "menu"
 local all_nodes = {}
 local all_nodes_stat = {}
 local is_menu = true
-local menu_enabled = true
+
+--for stats
+local function load_stats()
+	local filename = sys.get_save_file("Steampunk survival", "statistics")
+	local data_stats = sys.load(filename)
+	return data_stats or STAT_FIRST
+end
+
+local function save_stats(self, statistics)
+	local filename = sys.get_save_file("Steampunk survival", "statistics")
+	sys.save(filename, 
+	{ enemies_killed = statistics.enemies_killed, locations_passed = statistics.locations_passed, 
+	sec = statistics.sec, min = statistics.min, hour = statistics.hour })
+end
 
 local function start()
 	--start game
@@ -70,6 +86,9 @@ function init(self)
 	table.insert(all_nodes_stat, gui.get_node("stats/statistic_back"))
 	table.insert(all_nodes_stat, gui.get_node("stats/back"))
 	table.insert(all_nodes_stat, gui.get_node("back"))
+
+	self.statistics = { enemies_killed = 0, locations_passed = 0, sec = 0, min = 0, hour = 0 }
+	self.statistics = load_stats()
 end
 
 function on_message(self, message_id, message, sender)
@@ -91,16 +110,50 @@ function on_message(self, message_id, message, sender)
 			for _,node in ipairs(all_nodes) do
 				gui.set_enabled(node, true)
 			end
+
+			window_enabled = "menu"
 		end)
+	end
+
+	--for statistics
+	if message_id == UPDATE_STAT then
+		if self.statistics.enemies_killed ~= nil then
+			self.statistics.enemies_killed = self.statistics.enemies_killed + message.enemies_killed
+			self.statistics.locations_passed = self.statistics.locations_passed + message.locations_passed
+			
+			self.statistics.sec = self.statistics.sec + message.sec
+			--for sec < 60
+			if self.statistics.sec > 59 then
+				while self.statistics.sec > 59 do
+					self.statistics.sec = self.statistics.sec - 60
+					self.statistics.min = self.statistics.min + 1
+				end
+			end
+
+			self.statistics.min = self.statistics.min + message.min
+			--for min < 60
+			if self.statistics.min > 59 then
+				while self.statistics.min > 59 do
+					self.statistics.min = self.statistics.min - 60
+					self.statistics.hour = self.statistics.hour + 1
+				end
+			end
+			
+			self.statistics.hour = self.statistics.hour + message.hour
+		else
+			self.statistics = message
+		end
+		
+		save_stats(self, self.statistics)
 	end
 end
 
 function on_input(self, action_id, action)
 	if action.released then
-		if menu_enabled then
+		if window_enabled == "menu" then
 			--click start
 			if gui.pick_node(all_nodes[1], action.x, action.y) then
-				menu_enabled = false
+				window_enabled = "start"
 				set_color(self, all_nodes[1])
 
 				timer.delay(1, false,  start)
@@ -108,7 +161,7 @@ function on_input(self, action_id, action)
 
 			--click statistic
 			if gui.pick_node(all_nodes[2], action.x, action.y) then
-				menu_enabled = false
+				window_enabled = "stats"
 				set_color(self, all_nodes[2])
 
 				timer.delay(1, false,  function()
@@ -117,30 +170,41 @@ function on_input(self, action_id, action)
 						gui.set_enabled(node, true)
 					end
 				end)
+
+				self.statistics = load_stats()
+				if self.statistics.enemies_killed ~= nil then
+					gui.set_text(gui.get_node("stats/enemy_killed_text"), 
+					"Enemy killed: " .. self.statistics.enemies_killed)
+					gui.set_text(gui.get_node("stats/locations_passed_text"), 
+					"Locations passed: " .. self.statistics.locations_passed)
+
+					self.life_time = self.statistics.hour .. ":" .. self.statistics.min .. ":" .. self.statistics.sec
+					gui.set_text(gui.get_node("stats/life_time_text"), 
+					"Life time: " .. self.life_time)
+				end
 			end
 
 			--click heroes
 			if gui.pick_node(all_nodes[3], action.x, action.y) then
-				menu_enabled = false
+				window_enabled = "heroes"
 				set_color(self, all_nodes[3])
 			end
 
 			--click settings
 			if gui.pick_node(all_nodes[4], action.x, action.y) then
-				menu_enabled = false
+				window_enabled = "settings"
 				set_color(self, all_nodes[4])
 			end
 			
 			--click exit
 			if gui.pick_node(all_nodes[5], action.x, action.y) then
-				menu_enabled = false
 				set_color(self, all_nodes[5])
 
 				timer.delay(1, false,  function()
 					sys.exit(0)
 				end)
 			end
-		else
+		elseif window_enabled == "stats" then
 			--click back stat
 			if gui.pick_node(all_nodes_stat[3], action.x, action.y) then
 				set_color(self, all_nodes_stat[3])
@@ -148,7 +212,7 @@ function on_input(self, action_id, action)
 				timer.delay(1, false,  function()
 					back(all_nodes_stat, all_nodes)
 
-					menu_enabled = true
+					window_enabled = "menu"
 				end)
 			end
 		end

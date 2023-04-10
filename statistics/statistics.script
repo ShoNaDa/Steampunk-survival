@@ -23,7 +23,23 @@ end
 
 --format hours:minutes:seconds in Int32
 local function calculate_life_time(self)
-	self.life_time = hash(math.modf(seconds_life_time / 3600) .. ":" .. math.modf(seconds_life_time / 60) .. ":" .. seconds_life_time)
+	--for sec < 60
+	self.sec = math.modf(seconds_life_time)
+	if self.sec > 59 then
+		self.sec = self.sec % 60
+	end
+
+	--for min < 60
+	self.min = math.modf(seconds_life_time / 60)
+	if self.min > 59 then
+		self.min = self.min % 60
+	end
+
+	--hours
+	self.hour = math.modf(seconds_life_time / 3600)
+
+	--concat all
+	self.life_time = hash(self.hour .. ":" .. self.min .. ":" .. self.sec)
 end
 
 function on_message(self, message_id, message)
@@ -39,5 +55,9 @@ function on_message(self, message_id, message)
 		msg.post("main:/GUI#game_over", "statistics", 
 		{ hp = self.health, damage = self.damage, speed = self.speed, enemies_killed = self.enemies_killed, 
 		lvl = self.level, locations_passed = self.locations_passed, time = self.life_time })
+
+		msg.post("menu:/menu#main_menu", "update_stat", 
+		{ enemies_killed = self.enemies_killed, locations_passed = self.locations_passed, 
+		sec = self.sec, min = self.min, hour = self.hour })
 	end
 end
