@@ -29,12 +29,12 @@ icons_asset = /assets/Assets.car
 bundle_identifier = com.example.todo
 
 [android]
-app_icon_36x36 = /assets/app_icons/icon_36.png
-app_icon_48x48 = /assets/app_icons/icon_48.png
-app_icon_72x72 = /assets/app_icons/icon_72.png
-app_icon_96x96 = /assets/app_icons/icon_96.png
-app_icon_144x144 = /assets/app_icons/icon_144.png
-app_icon_192x192 = /assets/app_icons/icon_192.png
+app_icon_36x36 = /resources/icon_192.PNG
+app_icon_48x48 = /resources/icon_192.PNG
+app_icon_72x72 = /resources/icon_192.PNG
+app_icon_96x96 = /resources/icon_192.PNG
+app_icon_144x144 = /resources/icon_192.PNG
+app_icon_192x192 = /resources/icon_192.PNG
 input_method = HiddenInputField
 
 [script]
@@ -57,4 +57,7 @@ max_count = 1000
 [tilemap]
 max_count = 50
 max_tile_count = 5000
+
+[windows]
+app_icon = /resources/icon_192.ico
 
