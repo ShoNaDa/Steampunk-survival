@@ -2,6 +2,7 @@ local ABILITY_SELECTED = hash("ability_selected")
 local HIDE = hash("hide")
 local UNHIDE = hash("unhide")
 local SMOKE_BOMB_ICON = hash("smoke bomb icon")
+local SET_ABILITIES = hash("set_abilities")
 
 local сhoosed_abilities = {}
 local all_nodes = {}
@@ -51,6 +52,12 @@ function on_message(self, message_id, message, sender)
 	elseif message_id == UNHIDE then
 		gui.set_enabled(gui.get_node("line"), true)
 		gui.set_enabled(gui.get_node("all"), true)
+	end
+
+	--replace line
+	if message_id == SET_ABILITIES then
+		gui.set_position(gui.get_node("line"), message.pos)
+		gui.set_position(gui.get_node("all"), message.pos)
 	end
 end
 

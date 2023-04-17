@@ -1,20 +1,21 @@
 local RELOAD_GAME = hash("reload_game")
 local FINAL_GAME = hash("final_game")
 local UPDATE_STAT = hash("update_stat")
-local STAT_FIRST = { enemies_killed = 0, locations_passed = 0, sec = 0, min = 0, hour = 0 }
+local UPDATE_CONTROLS = hash("update_controls")
 
 local main_proxy = "/proxy#collectionproxy"
 local game_proxy = "main:/proxy#game_proxy"
 local window_enabled = "menu"
 local all_nodes = {}
 local all_nodes_stat = {}
+local all_nodes_settings = {}
 local is_menu = true
 
 --for stats
 local function load_stats()
 	local filename = sys.get_save_file("Steampunk survival", "statistics")
 	local data_stats = sys.load(filename)
-	return data_stats or STAT_FIRST
+	return data_stats or 0
 end
 
 local function save_stats(self, statistics)
@@ -24,12 +25,27 @@ local function save_stats(self, statistics)
 	sec = statistics.sec, min = statistics.min, hour = statistics.hour })
 end
 
+--for settings
+local function load_settings()
+	local filename = sys.get_save_file("Steampunk survival", "settings")
+	local data_settings = sys.load(filename)
+	return data_settings or 0
+end
+
+local function save_settings(self, settings)
+	local filename = sys.get_save_file("Steampunk survival", "settings")
+	sys.save(filename, 
+	{ gamepad = settings.gamepad, abilities = settings.abilities })
+end
+
 local function start()
 	--start game
 	msg.post(main_proxy, "acquire_input_focus")
 	msg.post(main_proxy, "load")
 	msg.post(main_proxy, "init")
 	msg.post(main_proxy, "enable")
+
+	
 end
 
 local function final()
@@ -87,8 +103,20 @@ function init(self)
 	table.insert(all_nodes_stat, gui.get_node("stats/back"))
 	table.insert(all_nodes_stat, gui.get_node("back"))
 
+	--settings
+	table.insert(all_nodes_settings, gui.get_node("setting/title"))
+	table.insert(all_nodes_settings, gui.get_node("setting/back"))
+	table.insert(all_nodes_settings, gui.get_node("setting/save"))
+	table.insert(all_nodes_settings, gui.get_node("setting/settings_back"))
+	table.insert(all_nodes_settings, gui.get_node("setting/left_check_box"))
+	table.insert(all_nodes_settings, gui.get_node("setting/right_check_box"))
+	table.insert(all_nodes_settings, gui.get_node("back"))
+
 	self.statistics = { enemies_killed = 0, locations_passed = 0, sec = 0, min = 0, hour = 0 }
 	self.statistics = load_stats()
+
+	self.settings = { gamepad = vmath.vector3(100, 100, 0), abilities = vmath.vector3(970, 35, 0) }
+	self.settings = load_settings()
 end
 
 function on_message(self, message_id, message, sender)
@@ -146,6 +174,15 @@ function on_message(self, message_id, message, sender)
 		
 		save_stats(self, self.statistics)
 	end
+
+	if message_id == UPDATE_CONTROLS then
+		local data_settings = load_settings()
+		if data_settings.gamepad ~= nil then
+			--replace
+			msg.post("default:/hero/camera#gamepad", "set_gamepad", { pos = data_settings.gamepad })
+			msg.post("main:/GUI#active_abilities", "set_abilities", { pos = data_settings.abilities })
+		end
+	end
 end
 
 function on_input(self, action_id, action)
@@ -194,6 +231,15 @@ function on_input(self, action_id, action)
 			if gui.pick_node(all_nodes[4], action.x, action.y) then
 				window_enabled = "settings"
 				set_color(self, all_nodes[4])
+
+				timer.delay(1, false,  function()
+					--enable all stat
+					for _,node in ipairs(all_nodes_settings) do
+						gui.set_enabled(node, true)
+					end
+				end)
+
+				self.settings = load_settings()
 			end
 			
 			--click exit
@@ -214,6 +260,38 @@ function on_input(self, action_id, action)
 
 					window_enabled = "menu"
 				end)
+			end
+		elseif window_enabled == "settings" then
+			--click back settings
+			if gui.pick_node(all_nodes_settings[2], action.x, action.y) then
+				set_color(self, all_nodes_settings[2])
+
+				timer.delay(1, false,  function()
+					back(all_nodes_settings, all_nodes)
+
+					window_enabled = "menu"
+				end)
+			--click save
+			elseif gui.pick_node(all_nodes_settings[3], action.x, action.y) then
+				set_color(self, all_nodes_settings[3])
+
+				save_settings(self, self.settings)
+				
+				timer.delay(1, false,  function()
+					back(all_nodes_settings, all_nodes)
+
+					window_enabled = "menu"
+				end)
+			--click left check_box
+			elseif gui.pick_node(all_nodes_settings[5], action.x, action.y) then
+				gui.set_color(all_nodes_settings[5], vmath.vector4(0.7, 0.7, 1, 1))
+				gui.set_color(all_nodes_settings[6], vmath.vector4(1, 1, 1, 1))
+				self.settings = { gamepad = vmath.vector3(100, 100, 0), abilities = vmath.vector3(970, 35, 0) }
+			--click right check_box
+			elseif gui.pick_node(all_nodes_settings[6], action.x, action.y) then
+				gui.set_color(all_nodes_settings[6], vmath.vector4(0.7, 0.7, 1, 1))
+				gui.set_color(all_nodes_settings[5], vmath.vector4(1, 1, 1, 1))
+				self.settings = { gamepad = vmath.vector3(1030, 100, 0), abilities = vmath.vector3(160, 35, 0) }
 			end
 		end
 	end

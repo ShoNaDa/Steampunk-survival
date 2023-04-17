@@ -1,6 +1,7 @@
 go.property("position", vmath.vector3())
 
 local REGISTER = hash("register")
+local SET_GAMEPAD = hash("set_gamepad")
 
 local game_paused = false
 
@@ -86,7 +87,7 @@ local function register(self, node, fn)
 	}
 end
 
-function init(self)
+local function init(self)
 	msg.post(".", "acquire_input_focus")
 
 	self.position = gui.get_position(gui.get_node("slider"))
@@ -111,6 +112,12 @@ function on_message(self, message_id, message, sender)
 	if message_id == REGISTER then
 		--get url hero
 		self.listener = sender
+	end
+
+	if message_id == SET_GAMEPAD then
+		gui.set_position(gui.get_node("back"), message.pos)
+		gui.set_position(gui.get_node("slider"), message.pos)
+		init(self)
 	end
 end
 
