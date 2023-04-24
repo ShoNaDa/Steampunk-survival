@@ -12,6 +12,7 @@ local rotation_hero = vmath.quat()
 local game_paused = false
 
 local GET_NEW_CHARACT = hash("get_new_charact")
+local GET_CHARACT = hash("get_charact")
 local LVL_UPDATE = hash("lvl_update")
 local SHOOT = hash("shoot")
 local GET_DAMAGE = hash("get_damage")
@@ -177,5 +178,11 @@ function on_message(self, message_id, message, sender)
 	if message_id == REBEL then
 		self.hp = self.max_HP
 		msg.post("main:/GUI#helth", "life_max_update", { max_life = self.max_HP, life = self.hp })
+	end
+
+	--for view characts on paused
+	if message_id == GET_CHARACT then
+		msg.post("main:/GUI#pause", "get_charact", 
+		{ hp = self.hp, lvl = self.lvl, speed = self.max_speed, damage = self.damage })
 	end
 end

@@ -9,6 +9,12 @@ function init(self)
 	self.helth_node = gui.get_node("helth_box")
 	self.speed_node = gui.get_node("speed_box")
 	self.damage_node = gui.get_node("damage_box")
+	self.all = gui.get_node("all")
+	--textbox's
+	self.damage = gui.get_node("damage")
+	self.helth = gui.get_node("hp")
+	self.speed = gui.get_node("speed")
+	self.new_lvl = gui.get_node("next_lvl")
 
 	self.all_enabled = false
 end
@@ -39,7 +45,7 @@ local function set_characts_hero(self, _hp, _speed, _damage, _pick_node)
 	
 	--disable all nodes
 	timer.delay(1, false,  function()
-		gui.set_enabled(gui.get_node("all"), false)
+		gui.set_enabled(self.all, false)
 		msg.post("/GUI#pause", "unpaused")
 
 		msg.post("/GUI#pause", "unhide")
@@ -55,7 +61,7 @@ function on_message(self, message_id, message, sender)
 		--show characteristic message
 		if message.characts.lvl % lvl_ability ~= 0 then
 			msg.post("/GUI#pause", "paused")
-			gui.set_enabled(gui.get_node("all"), true)
+			gui.set_enabled(self.all, true)
 
 			msg.post("/GUI#pause", "hide")
 			msg.post("/GUI#active_abilities", "hide")
@@ -66,10 +72,10 @@ function on_message(self, message_id, message, sender)
 			damage = message.characts.damage
 
 			--set GUI
-			gui.set_text(gui.get_node("next_lvl"), "New lvl")
-			gui.set_text(gui.get_node("hp"), "Hp: " .. hp .. " => " .. hp_calc(self, hp))
-			gui.set_text(gui.get_node("speed"), "Speed: " .. speed .. " => " .. speed_calc(self, speed))
-			gui.set_text(gui.get_node("damage"), "Damage: " .. damage .. " => " .. damage_calc(self, damage))
+			gui.set_text(self.new_lvl, "New lvl")
+			gui.set_text(self.helth, "Hp: " .. hp .. " => " .. hp_calc(self, hp))
+			gui.set_text(self.speed, "Speed: " .. speed .. " => " .. speed_calc(self, speed))
+			gui.set_text(self.damage, "Damage: " .. damage .. " => " .. damage_calc(self, damage))
 			
 			timer.delay(0.5, false, function()
 				self.all_enabled = true
