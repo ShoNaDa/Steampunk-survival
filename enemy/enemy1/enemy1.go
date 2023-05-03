@@ -16,8 +16,8 @@ components {
 embedded_components {
   id: "sprite"
   type: "sprite"
-  data: "tile_set: \"/enemy/enemy1/enemy1.tilesource\"\n"
-  "default_animation: \"enemy1\"\n"
+  data: "tile_set: \"/resources/images.atlas\"\n"
+  "default_animation: \"zombie\"\n"
   "material: \"/builtins/materials/sprite.material\"\n"
   "blend_mode: BLEND_MODE_ALPHA\n"
   ""
@@ -31,6 +31,11 @@ embedded_components {
     y: 0.0
     z: 0.0
     w: 1.0
+  }
+  scale {
+    x: 0.5
+    y: 0.5
+    z: 1.0
   }
 }
 embedded_components {
@@ -51,8 +56,8 @@ embedded_components {
   "  shapes {\n"
   "    shape_type: TYPE_BOX\n"
   "    position {\n"
-  "      x: 1.0\n"
-  "      y: -2.0\n"
+  "      x: 0.0\n"
+  "      y: 0.0\n"
   "      z: 0.0\n"
   "    }\n"
   "    rotation {\n"
@@ -64,8 +69,8 @@ embedded_components {
   "    index: 0\n"
   "    count: 3\n"
   "  }\n"
-  "  data: 5.5\n"
-  "  data: 5.5\n"
+  "  data: 17.4095\n"
+  "  data: 17.0475\n"
   "  data: 10.0\n"
   "}\n"
   "linear_damping: 0.0\n"
